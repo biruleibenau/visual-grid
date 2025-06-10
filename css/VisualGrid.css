@@ -1,1 +1,101 @@
 
+.visualgrid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media(max-width: 992px) {
+  .visualgrid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media(max-width: 600px) {
+  .visualgrid-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vg-item {
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  height: 250px;
+}
+.vg-item.visible {
+  opacity: 1;
+  transform: none;
+}
+.vg-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.vg-item h3 {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  margin: 0;
+  padding: 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+/* Efeitos básicos */
+.vg-item.effect-fade {
+  opacity: 0;
+}
+.vg-item.effect-fade.visible {
+  opacity: 1;
+}
+
+.vg-item.effect-slide-right {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.vg-item.effect-slide-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.vg-item.effect-zoom {
+  opacity: 0;
+  transform: scale(0.8);
+}
+.vg-item.effect-zoom.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.vg-item.effect-flip {
+  opacity: 0;
+  transform-style: preserve-3d;
+  transform: rotateY(90deg);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+.vg-item.effect-flip.visible {
+  opacity: 1;
+  transform: rotateY(0deg);
+}
+
+/* Botões filtro */
+.visualgrid-filter-btn {
+  padding: 10px 15px;
+  margin: 5px;
+  background: #ddd;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+.visualgrid-filter-btn.active,
+.visualgrid-filter-btn:hover {
+  background: #333;
+  color: #fff;
+}
