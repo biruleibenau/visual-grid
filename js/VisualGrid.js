@@ -4,7 +4,8 @@ const VisualGrid = (() => {
   let items = [];
   let buttons = [];
   let currentEffect = '';
-
+  
+  // Cria o elemento de grid
   function createGridItem(itemData, index) {
     const div = document.createElement('div');
     div.classList.add('vg-item', `effect-${currentEffect}`);
@@ -17,7 +18,7 @@ const VisualGrid = (() => {
       <h3>${itemData.title}</h3>
     `;
 
-    // Delay para ativar animação
+    // Ativa animação
     setTimeout(() => {
       div.classList.add('visible');
     }, 50 + index * 150);
@@ -25,6 +26,7 @@ const VisualGrid = (() => {
     return div;
   }
 
+  // Renderiza os itens filtrando por categoria e efeito
   function renderGrid(effect, category) {
     currentEffect = effect || options.defaultEffect;
     container.innerHTML = '';
@@ -40,6 +42,7 @@ const VisualGrid = (() => {
     });
   }
 
+  // Inicializa a galeria
   function init(userOptions = {}) {
     options = {
       containerSelector: '.visualgrid-container',
@@ -59,10 +62,10 @@ const VisualGrid = (() => {
     items = options.items;
     buttons = [...document.querySelectorAll(options.buttonsSelector)];
 
-    // Inicial render
+    // Renderização inicial
     renderGrid(options.defaultEffect, 'all');
 
-    // Eventos dos botões filtro + efeito
+    // Eventos dos botões filtro e efeito
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         buttons.forEach(b => b.classList.remove('active'));
