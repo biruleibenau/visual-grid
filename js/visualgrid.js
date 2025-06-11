@@ -39,8 +39,8 @@ const VisualGrid = (() => {
     item.style.transitionDelay = '';
     item.style.height = '';
     item.style.transitionDuration = '';
-    item.style.opacity = '0';
-    item.style.transform = ''; // Limpa transformações residuais
+    item.style.opacity = '';
+    item.style.transform = '';
 
     // Aplica o efeito definido em defaultEffect
     item.classList.add(`effect-${options.defaultEffect}`);
@@ -49,10 +49,13 @@ const VisualGrid = (() => {
     item.style.transitionDelay = `${index * 150}ms`;
 
     // Força reflow para reiniciar a animação
-    void item.offsetHeight; // Trigger reflow
+    void item.offsetHeight;
 
-    // Aplica visibilidade imediatamente (removido setTimeout para evitar atrasos)
-    item.classList.add('visible');
+    // Aplica visibilidade com pequeno delay para garantir a transição
+    setTimeout(() => {
+      item.classList.add('visible');
+      item.style.opacity = ''; // Remove opacity inline para evitar conflito
+    }, 50 + index * 150);
   }
 
   function renderGrid(category) {
@@ -62,7 +65,7 @@ const VisualGrid = (() => {
     allItems.forEach(item => {
       item.style.display = 'none';
       item.classList.remove('visible', 'effect-fade', 'effect-slide-right', 'effect-zoom', 'effect-flip');
-      item.style.opacity = '0';
+      item.style.opacity = '';
       item.style.transform = '';
     });
 
@@ -73,7 +76,7 @@ const VisualGrid = (() => {
       const shouldShow = !options.filterByCategory || category === 'all' || itemCategory === category;
 
       if (shouldShow) {
-        item.style.display = ''; // Mostra o item
+        item.style.display = '';
         applyEffectToItem(item, visibleIndex);
         visibleIndex++;
       }
@@ -84,7 +87,7 @@ const VisualGrid = (() => {
     options = {
       containerSelector: '.visualgrid-container',
       buttonsSelector: '.visualgrid-filter-btn',
-      defaultEffect: 'slide-right', // Efeito único
+      defaultEffect: 'fade', // Efeito único
       itemHeight: '260px',
       columns: 3,
       gap: '20px',
