@@ -3,7 +3,6 @@ const VisualGrid = (() => {
   let container;
   let items = [];
   let buttons = [];
-  let currentEffect = '';
 
   function applyGridStyles() {
     if (!container) return;
@@ -33,36 +32,53 @@ const VisualGrid = (() => {
     }
   }
 
-  function applyEffectToItem(item, effect, index) {
-    // Remove efeitos anteriores
+  function applyEffectToItem(item, index) {
+    // Remove classes e estilos anteriores
     item.classList.remove('effect-fade', 'effect-slide-right', 'effect-zoom', 'effect-flip', 'visible');
-    // Adiciona novo efeito e atraso
-    item.classList.add(`effect-${effect}`);
+    item.style.animationDelay = '';
+    item.style.transitionDelay = '';
+    item.style.height = '';
+    item.style.transitionDuration = '';
+    item.style.opacity = '0';
+    item.style.transform = ''; // Limpa transformações residuais
+
+    // Aplica o efeito definido em defaultEffect
+    item.classList.add(`effect-${options.defaultEffect}`);
     item.style.animationDelay = `${index * 150}ms`;
     item.style.transitionDelay = `${index * 150}ms`;
-    item.style.height = options.itemHeight || '250px';
+    item.style.height = options.itemHeight || '260px';
     item.style.transitionDuration = options.animationDuration;
-    // Aplica visibilidade após pequeno delay
+
+    // Força reflow para reiniciar a animação
+    item.offsetHeight; // Trigger reflow
+
+    // Aplica visibilidade
     setTimeout(() => {
       item.classList.add('visible');
     }, 50 + index * 150);
   }
 
-  function renderGrid(effect, category) {
-    currentEffect = effect || options.defaultEffect;
-
-    // Pega todos os itens do DOM
+  function renderGrid(category) {
     const allItems = document.querySelectorAll(`${options.containerSelector} .vg-item`);
 
-    allItems.forEach((item, index) => {
+    // Esconde todos os itens e limpa estados
+    allItems.forEach(item => {
+      item.style.display = 'none';
+      item.classList.remove('visible', 'effect-fade', 'effect-slide-right', 'effect-zoom', 'effect-flip');
+      item.style.opacity = '0';
+      item.style.transform = ''; // Reseta transformações
+    });
+
+    // Filtra e mostra os itens relevantes
+    let visibleIndex = 0;
+    allItems.forEach(item => {
       const itemCategory = item.dataset.category || '';
       const shouldShow = !options.filterByCategory || category === 'all' || itemCategory === category;
 
       if (shouldShow) {
-        item.style.display = ''; // Mostra o item
-        applyEffectToItem(item, currentEffect, index);
-      } else {
-        item.style.display = 'none'; // Esconde o item
+        item.style.display = '';
+        applyEffectToItem(item, visibleIndex);
+        visibleIndex++;
       }
     });
   }
@@ -72,10 +88,10 @@ const VisualGrid = (() => {
       containerSelector: '.visualgrid-container',
       buttonsSelector: '.visualgrid-filter-btn',
       defaultEffect: 'fade',
-      itemHeight: '250px',
+      itemHeight: '260px',
       columns: 3,
       gap: '20px',
-      animationDuration: '500ms',
+      animationDuration: '400ms',
       responsiveBreakpoints: {
         992: 2,
         600: 1,
@@ -90,25 +106,20 @@ const VisualGrid = (() => {
       return;
     }
 
-    // Remove a dependência de options.items
     items = document.querySelectorAll(`${options.containerSelector} .vg-item`);
     buttons = [...document.querySelectorAll(options.buttonsSelector)];
 
     applyGridStyles();
+    renderGrid('all');
 
-    // Inicial render
-    renderGrid(options.defaultEffect, 'all');
-
-    // Eventos dos botões
     if (options.filterByCategory) {
       buttons.forEach(btn => {
         btn.addEventListener('click', () => {
           buttons.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
 
-          const effect = btn.dataset.effect || options.defaultEffect;
           const category = btn.dataset.category || 'all';
-          renderGrid(effect, category);
+          renderGrid(category);
         });
       });
     }
