@@ -44,18 +44,15 @@ const VisualGrid = (() => {
 
     // Aplica o efeito definido em defaultEffect
     item.classList.add(`effect-${options.defaultEffect}`);
-    item.style.animationDelay = `${index * 150}ms`;
-    item.style.transitionDelay = `${index * 150}ms`;
     item.style.height = options.itemHeight || '260px';
     item.style.transitionDuration = options.animationDuration;
+    item.style.transitionDelay = `${index * 150}ms`;
 
     // Força reflow para reiniciar a animação
-    item.offsetHeight; // Trigger reflow
+    void item.offsetHeight; // Trigger reflow
 
-    // Aplica visibilidade
-    setTimeout(() => {
-      item.classList.add('visible');
-    }, 50 + index * 150);
+    // Aplica visibilidade imediatamente (removido setTimeout para evitar atrasos)
+    item.classList.add('visible');
   }
 
   function renderGrid(category) {
@@ -66,7 +63,7 @@ const VisualGrid = (() => {
       item.style.display = 'none';
       item.classList.remove('visible', 'effect-fade', 'effect-slide-right', 'effect-zoom', 'effect-flip');
       item.style.opacity = '0';
-      item.style.transform = ''; // Reseta transformações
+      item.style.transform = '';
     });
 
     // Filtra e mostra os itens relevantes
@@ -76,7 +73,7 @@ const VisualGrid = (() => {
       const shouldShow = !options.filterByCategory || category === 'all' || itemCategory === category;
 
       if (shouldShow) {
-        item.style.display = '';
+        item.style.display = ''; // Mostra o item
         applyEffectToItem(item, visibleIndex);
         visibleIndex++;
       }
@@ -87,7 +84,7 @@ const VisualGrid = (() => {
     options = {
       containerSelector: '.visualgrid-container',
       buttonsSelector: '.visualgrid-filter-btn',
-      defaultEffect: 'fade',
+      defaultEffect: 'slide-right', // Efeito único
       itemHeight: '260px',
       columns: 3,
       gap: '20px',
