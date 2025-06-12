@@ -728,316 +728,12 @@
   // Expor a biblioteca globalmente
   window.PortfolioGrid = PortfolioGrid;
 })(window);
+
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas
 (function(window) {
   'use strict';
 
-  // Construtor da biblioteca
-  function PortfolioGrid(element, options) {
-    this.element = typeof element === 'string' ? document.querySelector(element) : element;
-    if (!this.element) {
-      console.error('PortfolioGrid: Elemento não encontrado:', element);
-      return;
-    }
-
-    // Opções padrão
-    this.defaults = {
-      itemSelector: '.grid-item',
-      layoutMode: 'masonry',
-      columnWidth: 'auto',
-      gutter: 10,
-      transitionDuration: '0.4s',
-      percentPosition: true,
-      filter: '*',
-      sortBy: 'original-order',
-      sortAscending: true,
-      getSortData: {
-        name: function(elem) { return elem.textContent; },
-        order: '[data-order]',
-        random: function() { return Math.random(); }
-      }
-    };
-
-    // Mescla opções fornecidas com padrão
-    this.options = Object.assign({}, this.defaults, options);
-
-    // Inicializa o grid
-    this._init();
-  }
-
-  // Métodos do protótipo
-  PortfolioGrid.prototype = {
-    // Inicialização
-    _init: function() {
-      this.element.style.position = 'relative';
-      this.items = this._getItems();
-      this._getSize();
-      this._updateSortData();
-      this.arrange();
-    },
-
-    // Coleta itens do grid
-    _getItems: function() {
-      var selector = this.options.itemSelector;
-      var elements = this.element.querySelectorAll(selector);
-      return Array.from(elements).map(function(elem, index) {
-        return {
-          element: elem,
-          isVisible: true,
-          sortData: { 'original-order': index }
-        };
-      });
-    },
-
-    // Calcula tamanhos do contêiner e itens
-    _getSize: function() {
-      var rect = this.element.getBoundingClientRect();
-      var styles = getComputedStyle(this.element);
-      this.size = {
-        width: rect.width,
-        innerWidth: rect.width - (parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight)),
-        height: rect.height,
-        innerHeight: rect.height - (parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom))
-      };
-
-      if (this.options.columnWidth === 'auto') {
-        var firstItem = this.items[0];
-        if (firstItem) {
-          var itemStyles = getComputedStyle(firstItem.element);
-          this.columnWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
-        } else {
-          this.columnWidth = this.size.innerWidth;
-        }
-      } else {
-        this.columnWidth = this.options.columnWidth;
-      }
-    },
-
-    // Método principal para configurar filtro, ordenação e layout
-    arrange: function(options) {
-      if (options) {
-        this.options = Object.assign({}, this.options, options);
-      }
-      this._updateSortData();
-      this._filter();
-      this._sort();
-      this.layout();
-    },
-
-    // Filtra itens
-    _filter: function() {
-      var filter = this.options.filter || '*';
-      var filterFn = this._getFilterTest(filter);
-
-      this.items.forEach(function(item) {
-        item.isVisible = filterFn(item.element);
-        item.element.style.display = item.isVisible ? '' : 'none';
-      });
-    },
-
-    // Cria função de teste para filtro
-    _getFilterTest: function(filter) {
-      if (filter === '*') {
-        return function() { return true; };
-      }
-      if (typeof filter === 'function') {
-        return filter;
-      }
-      return function(element) {
-        return element.matches(filter);
-      };
-    },
-
-    // Ordena itens
-    _sort: function() {
-      var sortBy = this.options.sortBy;
-      if (!sortBy || sortBy === 'none') return;
-
-      var sortAscending = this.options.sortAscending;
-      var sorters = this._getSorters();
-
-      this.items.sort(function(a, b) {
-        var keys = Array.isArray(sortBy) ? sortBy : [sortBy];
-        for (var i = 0; i < keys.length; i++) {
-          var key = keys[i];
-          var sorter = sorters[key] || function() { return 0; };
-          var valueA = a.sortData[key];
-          var valueB = b.sortData[key];
-          if (valueA > valueB) return sortAscending ? 1 : -1;
-          if (valueA < valueB) return sortAscending ? -1 : 1;
-        }
-        return 0;
-      });
-    },
-
-    // Cria funções de ordenação
-    _getSorters: function() {
-      var getSortData = this.options.getSortData;
-      var sorters = {};
-
-      for (var key in getSortData) {
-        var sorter = getSortData[key];
-        if (typeof sorter === 'string') {
-          sorters[key] = function(elem) {
-            var value = elem.element.querySelector(sorter) || elem.element.getAttribute(sorter.replace(/\[|\]/g, ''));
-            return value ? parseFloat(value) || value : '';
-          };
-        } else if (typeof sorter === 'function') {
-          sorters[key] = function(elem) {
-            return sorter(elem.element);
-          };
-        }
-      }
-      return sorters;
-    },
-
-    // Atualiza dados de ordenação
-    _updateSortData: function() {
-      var sorters = this._getSorters();
-      this.items.forEach(function(item, index) {
-        item.sortData['original-order'] = index;
-        for (var key in sorters) {
-          item.sortData[key] = sorters[key](item);
-        }
-      });
-    },
-
-    // Converte elementos em itens do grid
-    _itemize: function(elements) {
-      elements = Array.isArray(elements) ? elements : [elements];
-      return elements.map(function(elem, index) {
-        if (!(elem instanceof HTMLElement)) return null;
-        this.element.appendChild(elem);
-        return {
-          element: elem,
-          isVisible: true,
-          sortData: { 'original-order': this.items.length + index }
-        };
-      }, this).filter(item => item);
-    },
-
-    // Adiciona itens ao final do grid
-    appended: function(elements) {
-      var newItems = this._itemize(elements);
-      if (newItems.length) {
-        this.items = this.items.concat(newItems);
-        this._updateSortData();
-        this.arrange();
-      }
-    },
-
-    // Adiciona itens ao início do grid
-    prepended: function(elements) {
-      var newItems = this._itemize(elements);
-      if (newItems.length) {
-        this.items = newItems.concat(this.items);
-        this._updateSortData();
-        this.arrange();
-      }
-    },
-
-    // Remove itens do grid
-    remove: function(elements) {
-      elements = Array.isArray(elements) ? elements : [elements];
-      var itemsToRemove = this.items.filter(item => elements.includes(item.element));
-      if (itemsToRemove.length) {
-        itemsToRemove.forEach(item => {
-          if (item.element.parentNode) {
-            item.element.parentNode.removeChild(item.element);
-          }
-        });
-        this.items = this.items.filter(item => !elements.includes(item.element));
-        this._updateSortData();
-        this.arrange();
-      }
-    },
-
-    // Aplica o layout Masonry
-    layout: function() {
-      this._resetLayout();
-      this._layoutItems();
-      this._postLayout();
-    },
-
-    // Redefine o estado do layout
-    _resetLayout: function() {
-      this._getSize();
-      this.cols = Math.max(1, Math.floor(this.size.innerWidth / (this.columnWidth + this.options.gutter)));
-      this.colYs = new Array(this.cols).fill(0);
-      this.maxY = 0;
-    },
-
-    // Posiciona os itens
-    _layoutItems: function() {
-      this.items.forEach(function(item) {
-        if (item.isVisible) {
-          var position = this._getItemLayoutPosition(item);
-          this._positionItem(item, position.x, position.y);
-        }
-      }, this);
-    },
-
-    // Calcula a posição de um item
-    _getItemLayoutPosition: function(item) {
-      var itemStyles = getComputedStyle(item.element);
-      var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
-      var itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop) + parseFloat(itemStyles.marginBottom);
-
-      var colSpan = Math.min(Math.ceil(itemWidth / (this.columnWidth + this.options.gutter)), this.cols);
-      var colGroup = this._getTopColGroup(colSpan);
-      var minY = Math.min.apply(Math, colGroup);
-      var colIndex = colGroup.indexOf(minY);
-
-      var x = colIndex * (this.columnWidth + this.options.gutter);
-      var y = minY;
-
-      for (var i = colIndex; i < colIndex + colSpan; i++) {
-        this.colYs[i] = y + itemHeight + this.options.gutter;
-      }
-      this.maxY = Math.max(this.maxY, y + itemHeight + this.options.gutter);
-
-      if (this.options.percentPosition) {
-        x = (x / this.size.innerWidth) * 100 + '%';
-        y = (y / this.size.innerHeight) * 100 + '%';
-      } else {
-        x += 'px';
-        y += 'px';
-      }
-
-      return { x: x, y: y };
-    },
-
-    // Obtém grupo de colunas
-    _getTopColGroup: function(colSpan) {
-      if (colSpan === 1) return this.colYs;
-      var group = [];
-      for (var i = 0; i <= this.cols - colSpan; i++) {
-        group.push(Math.max.apply(Math, this.colYs.slice(i, i + colSpan)));
-      }
-      return group;
-    },
-
-    // Posiciona um item no grid
-    _positionItem: function(item, x, y) {
-      item.element.style.position = 'absolute';
-      item.element.style.left = x;
-      item.element.style.top = y;
-    },
-
-    // Finaliza o layout
-    _postLayout: function() {
-      this.element.style.height = (this.maxY - this.options.gutter) + 'px';
-    }
-  };
-
-  // Expor a biblioteca globalmente
-  window.PortfolioGrid = PortfolioGrid;
-})(window);
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas
-(function(window) {
-  'use strict';
-
-  // Construtor da biblioteca
+  // Construtor da biblioteca parte 6
   function PortfolioGrid(element, options) {
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) {
@@ -1222,9 +918,15 @@
             return value ? parseFloat(value) || value : '';
           };
         } else if (typeof sorter === 'function') {
-          sorters[key] = function(elem) {
-            return sorter(elem.element);
-          };
+          if (key === 'random') {
+            sorters[key] = function() {
+              return sorter();
+            };
+          } else {
+            sorters[key] = function(elem) {
+              return sorter(elem.element);
+            };
+          }
         }
       }
       return sorters;
@@ -1236,7 +938,7 @@
       this.items.forEach(function(item, index) {
         item.sortData['original-order'] = index;
         for (var key in sorters) {
-          item.sortData[key] = sorters[key](item);
+          item.sortData[key] = sorters[key](key === 'random' ? null : item);
         }
       });
     },
