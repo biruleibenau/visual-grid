@@ -617,26 +617,40 @@
     },
 
     // Cria funções de ordenação
-    _getSorters: function() {
-      var getSortData = this.options.getSortData;
-      var sorters = {};
+   _getSorters: function() {
+  var getSortData = this.options.getSortData;
+  var sorters = {};
 
-      for (var key in getSortData) {
-        var sorter = getSortData[key];
-        if (typeof sorter === 'string') {
-          sorters[key] = function(elem) {
-            var value = elem.element.querySelector(sorter) || elem.element.getAttribute(sorter.replace(/\[|\]/g, ''));
-            return value ? parseFloat(value) || value : '';
-          };
-        } else if (typeof sorter === 'function') {
-          sorters[key] = function(elem) {
-            return sorter(elem.element);
-          };
-        }
-      }
-      return sorters;
-    },
+  for (var key in getSortData) {
+    var sorter = getSortData[key];
 
+    if (typeof sorter === 'string') {
+      sorters[key] = function(sorterString) {
+        return function(elem) {
+          var value = elem.element.querySelector(sorterString);
+          if (value) return parseFloat(value.textContent) || value.textContent;
+          var attr = elem.element.getAttribute(sorterString.replace(/\[|\]/g, ''));
+          return attr ? parseFloat(attr) || attr : '';
+        };
+      }(sorter); // <- fechando a função imediatamente com IIFE
+    }
+
+    else if (typeof sorter === 'function') {
+      sorters[key] = function(sorterFn) {
+        return function(elem) {
+          // função sem argumentos, ex: random
+          if (sorterFn.length === 0) {
+            return sorterFn();
+          }
+          // função que espera o elemento
+          return sorterFn(elem.element);
+        };
+      }(sorter); // <- IIFE novamente
+    }
+  }
+
+  return sorters;
+},
     // Atualiza dados de ordenação
     _updateSortData: function() {
       var sorters = this._getSorters();
