@@ -805,9 +805,14 @@ _getSorters: function() {
     _init: function() {
       this.element.style.position = 'relative';
       this.items = this._getItems();
+      this.items.forEach(function(item) {
+        item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+      }, this);
       this._getSize();
       this._updateSortData();
       this.arrange();
+      // Adiciona listener pra redimensionamento
+      window.addEventListener('resize', () => this.arrange());
     },
 
     // Coleta itens do grid
@@ -899,9 +904,12 @@ _getSorters: function() {
     // Esconde itens com animação
     hide: function(items) {
       items.forEach(function(item) {
-        item.element.style.transition = `opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
         Object.assign(item.element.style, this.options.hiddenStyle);
-        item.element.style.display = 'none';
+        setTimeout(() => {
+          if (item.isVisible === false) {
+            item.element.style.display = 'none';
+          }
+        }, parseFloat(this.options.transitionDuration) * 1000);
       }, this);
     },
 
@@ -909,7 +917,6 @@ _getSorters: function() {
     reveal: function(items) {
       items.forEach(function(item) {
         item.element.style.display = '';
-        item.element.style.transition = `opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
         Object.assign(item.element.style, this.options.visibleStyle);
       }, this);
     },
@@ -950,11 +957,9 @@ _getSorters: function() {
           };
         } else if (typeof sorter === 'function') {
           sorters[key] = function(elem) {
-            // Para funções que não precisam de elemento (ex.: random), chamar diretamente
             if (sorter.length === 0) {
               return sorter();
             }
-            // Para funções que esperam um elemento (ex.: name), passar elem.element
             return sorter(elem.element);
           };
         }
@@ -1013,7 +1018,6 @@ _getSorters: function() {
       var itemsToRemove = this.items.filter(item => elements.includes(item.element));
       if (itemsToRemove.length) {
         itemsToRemove.forEach(item => {
-          item.element.style.transition = `opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
           Object.assign(item.element.style, this.options.hiddenStyle);
           setTimeout(() => {
             if (item.element.parentNode) {
@@ -1068,37 +1072,31 @@ _getSorters: function() {
 
     // Layout FitRows
     _layoutFitRows: function() {
-  var x = 0;
-  var maxRowHeight = 0;
-  this.rowY = 0; // Inicializa rowY
-  this.items.forEach(function(item) {
-    if (item.isVisible) {
-      var itemStyles = getComputedStyle(item.element);
-      var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
-      var itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop) + parseFloat(itemStyles.marginBottom);
+      var x = 0;
+      var maxRowHeight = 0;
+      this.rowY = 0;
+      this.items.forEach(function(item) {
+        if (item.isVisible) {
+          var itemStyles = getComputedStyle(item.element);
+          var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
+          var itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop) + parseFloat(itemStyles.marginBottom);
 
-      if (x + itemWidth > this.size.innerWidth) {
-        this.rowY += maxRowHeight + this.options.gutter;
-        x = 0;
-        maxRowHeight = 0;
-      }
+          if (x + itemWidth > this.size.innerWidth) {
+            this.rowY += maxRowHeight + this.options.gutter;
+            x = 0;
+            maxRowHeight = 0;
+          }
 
-      this._positionItem(item, x, this.rowY);
-      x += itemWidth + this.options.gutter;
-      maxRowHeight = Math.max(maxRowHeight, itemHeight);
-      this.maxY = this.rowY + maxRowHeight; // Atualiza maxY pra próxima linha
-    }
-  }, this);
-  this.maxRowHeight = maxRowHeight;
-},
-
-_postLayout: function() {
-  if (this.options.layoutMode === 'fitRows') {
-    this.element.style.height = (this.maxY + this.options.gutter) + 'px'; // Inclui gutter
-  } else {
-    this.element.style.height = (this.maxY - this.options.gutter) + 'px';
-  }
-},
+          var posX = this.options.percentPosition ? (x / this.size.innerWidth) * 100 + '%' : x + 'px';
+          var posY = this.options.percentPosition ? (this.rowY / this.size.innerHeight) * 100 + '%' : this.rowY + 'px';
+          this._positionItem(item, posX, posY);
+          x += itemWidth + this.options.gutter;
+          maxRowHeight = Math.max(maxRowHeight, itemHeight);
+          this.maxY = this.rowY + maxRowHeight;
+        }
+      }, this);
+      this.maxRowHeight = maxRowHeight;
+    },
 
     // Calcula a posição de um item (para Masonry)
     _getItemLayoutPosition: function(item) {
@@ -1140,17 +1138,20 @@ _postLayout: function() {
       return group;
     },
 
-    // Posiciona um item no grid com transição
+    // Posiciona um item no grid
     _positionItem: function(item, x, y) {
       item.element.style.position = 'absolute';
-      item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}`;
       item.element.style.left = x;
       item.element.style.top = y;
     },
 
     // Finaliza o layout
     _postLayout: function() {
-      this.element.style.height = (this.maxY - this.options.gutter) + 'px';
+      if (this.options.layoutMode === 'fitRows') {
+        this.element.style.height = (this.maxY + this.options.gutter) + 'px';
+      } else {
+        this.element.style.height = (this.maxY - this.options.gutter) + 'px';
+      }
     }
   };
 
