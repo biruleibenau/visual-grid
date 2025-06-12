@@ -1218,7 +1218,7 @@
         var sorter = getSortData[key];
         if (typeof sorter === 'string') {
           sorters[key] = function(elem) {
-            var value = elem.element.querySelector(sorter) || elem.element.getAttribute(sorter.replace(/$$ | $$/g, ''));
+            var value = elem.element.querySelector(sorter) || elem.element.getAttribute(sorter.replace(/\[|\]/g, ''));
             return value ? parseFloat(value) || value : '';
           };
         } else if (typeof sorter === 'function') {
@@ -1295,7 +1295,7 @@
       }
     },
 
-    // Aplica o layout Masonry
+    // Aplica o layout
     layout: function() {
       this._resetLayout();
       this._layoutItems();
@@ -1305,13 +1305,27 @@
     // Redefine o estado do layout
     _resetLayout: function() {
       this._getSize();
-      this.cols = Math.max(1, Math.floor(this.size.innerWidth / (this.columnWidth + this.options.gutter)));
-      this.colYs = new Array(this.cols).fill(0);
+      if (this.options.layoutMode === 'masonry') {
+        this.cols = Math.max(1, Math.floor(this.size.innerWidth / (this.columnWidth + this.options.gutter)));
+        this.colYs = new Array(this.cols).fill(0);
+      } else if (this.options.layoutMode === 'fitRows') {
+        this.rowY = 0;
+        this.maxRowHeight = 0;
+      }
       this.maxY = 0;
     },
 
     // Posiciona os itens
     _layoutItems: function() {
+      if (this.options.layoutMode === 'masonry') {
+        this._layoutMasonry();
+      } else if (this.options.layoutMode === 'fitRows') {
+        this._layoutFitRows();
+      }
+    },
+
+    // Layout Masonry
+    _layoutMasonry: function() {
       this.items.forEach(function(item) {
         if (item.isVisible) {
           var position = this._getItemLayoutPosition(item);
@@ -1320,7 +1334,32 @@
       }, this);
     },
 
-    // Calcula a posição de um item
+    // Layout FitRows
+    _layoutFitRows: function() {
+      var x = 0;
+      var maxRowHeight = 0;
+      this.items.forEach(function(item) {
+        if (item.isVisible) {
+          var itemStyles = getComputedStyle(item.element);
+          var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
+          var itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop) + parseFloat(itemStyles.marginBottom);
+
+          if (x + itemWidth > this.size.innerWidth) {
+            this.rowY += maxRowHeight + this.options.gutter;
+            x = 0;
+            maxRowHeight = 0;
+          }
+
+          this._positionItem(item, x, this.rowY);
+          x += itemWidth + this.options.gutter;
+          maxRowHeight = Math.max(maxRowHeight, itemHeight);
+          this.maxY = Math.max(this.maxY, this.rowY + itemHeight);
+        }
+      }, this);
+      this.maxRowHeight = maxRowHeight;
+    },
+
+    // Calcula a posição de um item (para Masonry)
     _getItemLayoutPosition: function(item) {
       var itemStyles = getComputedStyle(item.element);
       var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
@@ -1350,7 +1389,7 @@
       return { x: x, y: y };
     },
 
-    // Obtém grupo de colunas
+    // Obtém grupo de colunas (para Masonry)
     _getTopColGroup: function(colSpan) {
       if (colSpan === 1) return this.colYs;
       var group = [];
