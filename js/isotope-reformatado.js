@@ -251,14 +251,14 @@
       }
       return group;
     },
-
+    
     // Posiciona um item no grid
     _positionItem: function(item, x, y) {
-      item.element.style.position = 'absolute';
-      item.element.style.left = x;
-      item.element.style.top = y;
-    },
-
+  item.element.style.position = 'absolute';
+  item.element.style.left = x;
+  item.element.style.top = y;
+  item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+},
     // Finaliza o layout ajustando o contêiner
     _postLayout: function() {
       this.element.style.height = (this.maxY - this.options.gutter) + 'px';
