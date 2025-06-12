@@ -617,40 +617,51 @@
     },
 
     // Cria funções de ordenação
-   _getSorters: function() {
+_getSorters: function() {
   var getSortData = this.options.getSortData;
   var sorters = {};
 
   for (var key in getSortData) {
-    var sorter = getSortData[key];
+    let sorter = getSortData[key];
 
+    // Se for uma string: seletor ou atributo
     if (typeof sorter === 'string') {
-      sorters[key] = function(sorterString) {
-        return function(elem) {
-          var value = elem.element.querySelector(sorterString);
-          if (value) return parseFloat(value.textContent) || value.textContent;
-          var attr = elem.element.getAttribute(sorterString.replace(/\[|\]/g, ''));
-          return attr ? parseFloat(attr) || attr : '';
-        };
-      }(sorter); // <- fechando a função imediatamente com IIFE
+      sorters[key] = function(elem) {
+        // Primeiro tenta como seletor
+        let el = elem.element.querySelector(sorter);
+        if (el) {
+          let text = el.textContent || el.innerText;
+          return parseFloat(text) || text;
+        }
+
+        // Depois tenta como atributo (remove os colchetes [])
+        let attrName = sorter.replace(/^\[|\]$/g, '');
+        let attr = elem.element.getAttribute(attrName);
+        return attr ? parseFloat(attr) || attr : '';
+      };
     }
 
+    // Se for uma função
     else if (typeof sorter === 'function') {
-      sorters[key] = function(sorterFn) {
-        return function(elem) {
-          // função sem argumentos, ex: random
-          if (sorterFn.length === 0) {
-            return sorterFn();
+      sorters[key] = function(elem) {
+        try {
+          // Se a função não espera argumentos (ex: random)
+          if (sorter.length === 0) {
+            return sorter();
           }
-          // função que espera o elemento
-          return sorterFn(elem.element);
-        };
-      }(sorter); // <- IIFE novamente
+          // Se espera o elemento
+          return sorter(elem.element);
+        } catch (e) {
+          console.error(`Erro ao executar sorter "${key}":`, e);
+          return '';
+        }
+      };
     }
   }
 
   return sorters;
 },
+
     // Atualiza dados de ordenação
     _updateSortData: function() {
       var sorters = this._getSorters();
