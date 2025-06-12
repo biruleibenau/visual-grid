@@ -263,6 +263,7 @@
   });
 })(window);/// fim parte 4
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 5 (Layouts)
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 5 (Layouts)
 (function(window) {
   'use strict';
 
@@ -365,7 +366,7 @@
       return { x: x, y: y };
     },
 
-    // Obtém grupo de colunas (para Masonry)
+    // Obtém grupo de colunas
     _getTopColGroup: function(colSpan) {
       if (colSpan === 1) return this.colYs;
       const group = [];
@@ -384,14 +385,17 @@
 
     // Finaliza o layout ajustando o contêiner
     _postLayout: function() {
+      // Adiciona margem de segurança para garantir que todos os itens sejam visíveis
+      const extraHeight = this.options.gutter; // Margem extra
       if (this.options.layoutMode === 'fitRows') {
-        this.element.style.height = (this.maxY + this.options.gutter) + 'px';
+        this.element.style.height = (this.maxY + this.options.gutter + extraHeight) + 'px';
       } else {
-        this.element.style.height = (this.maxY - this.options.gutter) + 'px';
+        this.element.style.height = (this.maxY + extraHeight) + 'px'; // Ajustado para masonry
       }
     }
   });
-})(window);// fim parte 5
+})(window);
+// fim parte 5
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 6 (Manipulação e Arrange)
 (function(window) {
   'use strict';
