@@ -267,9 +267,9 @@
 
   // Expor a biblioteca globalmente
   window.PortfolioGrid = PortfolioGrid;
-})(window);
+})(window); // fim parte 1
 
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas parte 2
 (function(window) {
   'use strict';
 
@@ -309,6 +309,10 @@
 
       // Coleta os itens
       this.items = this._getItems();
+
+      this.items.forEach(function(item) {
+    item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+  }, this);
 
       // Calcula tamanhos
       this._getSize();
@@ -370,14 +374,16 @@
 
     // Filtra itens com base em options.filter
     _filter: function() {
-      var filter = this.options.filter || '*';
-      var filterFn = this._getFilterTest(filter);
+  var filter = this.options.filter || '*';
+  var filterFn = this._getFilterTest(filter);
 
-      this.items.forEach(function(item) {
-        item.isVisible = filterFn(item.element);
-        item.element.style.display = item.isVisible ? '' : 'none';
-      });
-    },
+  this.items.forEach(function(item) {
+    item.isVisible = filterFn(item.element);
+    item.element.style.opacity = item.isVisible ? '1' : '0';
+    item.element.style.visibility = item.isVisible ? 'visible' : 'hidden';
+    item.element.style.transform = item.isVisible ? 'scale(1)' : 'scale(0.8)';
+  });
+},
 
     // Cria função de teste para filtro
     _getFilterTest: function(filter) {
@@ -459,11 +465,11 @@
 
     // Posiciona um item no grid
     _positionItem: function(item, x, y) {
-      item.element.style.position = 'absolute';
-      item.element.style.left = x;
-      item.element.style.top = y;
-    },
-
+  item.element.style.position = 'absolute';
+  item.element.style.left = x;
+  item.element.style.top = y;
+  item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+},
     // Finaliza o layout ajustando o contêiner
     _postLayout: function() {
       this.element.style.height = (this.maxY - this.options.gutter) + 'px';
@@ -472,9 +478,9 @@
 
   // Expor a biblioteca globalmente
   window.PortfolioGrid = PortfolioGrid;
-})(window);
+})(window); // fim parte 2
 
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas parte 3
 (function(window) {
   'use strict';
 
@@ -752,10 +758,9 @@ _getSorters: function() {
 
   // Expor a biblioteca globalmente
   window.PortfolioGrid = PortfolioGrid;
-})(window);
+})(window); // fim da parte 3
 
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas parte 6
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas parte 4
 (function(window) {
   'use strict';
 
