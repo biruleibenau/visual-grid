@@ -1068,28 +1068,37 @@ _getSorters: function() {
 
     // Layout FitRows
     _layoutFitRows: function() {
-      var x = 0;
-      var maxRowHeight = 0;
-      this.items.forEach(function(item) {
-        if (item.isVisible) {
-          var itemStyles = getComputedStyle(item.element);
-          var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
-          var itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop) + parseFloat(itemStyles.marginBottom);
+  var x = 0;
+  var maxRowHeight = 0;
+  this.rowY = 0; // Inicializa rowY
+  this.items.forEach(function(item) {
+    if (item.isVisible) {
+      var itemStyles = getComputedStyle(item.element);
+      var itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
+      var itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop) + parseFloat(itemStyles.marginBottom);
 
-          if (x + itemWidth > this.size.innerWidth) {
-            this.rowY += maxRowHeight + this.options.gutter;
-            x = 0;
-            maxRowHeight = 0;
-          }
+      if (x + itemWidth > this.size.innerWidth) {
+        this.rowY += maxRowHeight + this.options.gutter;
+        x = 0;
+        maxRowHeight = 0;
+      }
 
-          this._positionItem(item, x, this.rowY);
-          x += itemWidth + this.options.gutter;
-          maxRowHeight = Math.max(maxRowHeight, itemHeight);
-          this.maxY = Math.max(this.maxY, this.rowY + itemHeight);
-        }
-      }, this);
-      this.maxRowHeight = maxRowHeight;
-    },
+      this._positionItem(item, x, this.rowY);
+      x += itemWidth + this.options.gutter;
+      maxRowHeight = Math.max(maxRowHeight, itemHeight);
+      this.maxY = this.rowY + maxRowHeight; // Atualiza maxY pra próxima linha
+    }
+  }, this);
+  this.maxRowHeight = maxRowHeight;
+},
+
+_postLayout: function() {
+  if (this.options.layoutMode === 'fitRows') {
+    this.element.style.height = (this.maxY + this.options.gutter) + 'px'; // Inclui gutter
+  } else {
+    this.element.style.height = (this.maxY - this.options.gutter) + 'px';
+  }
+},
 
     // Calcula a posição de um item (para Masonry)
     _getItemLayoutPosition: function(item) {
