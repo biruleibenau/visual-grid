@@ -729,11 +729,12 @@
   window.PortfolioGrid = PortfolioGrid;
 })(window);
 
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas parte 6
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas
 (function(window) {
   'use strict';
 
-  // Construtor da biblioteca parte 6
+  // Construtor da biblioteca
   function PortfolioGrid(element, options) {
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) {
@@ -918,15 +919,14 @@
             return value ? parseFloat(value) || value : '';
           };
         } else if (typeof sorter === 'function') {
-          if (key === 'random') {
-            sorters[key] = function() {
+          sorters[key] = function(elem) {
+            // Para funções que não precisam de elemento (ex.: random), chamar diretamente
+            if (sorter.length === 0) {
               return sorter();
-            };
-          } else {
-            sorters[key] = function(elem) {
-              return sorter(elem.element);
-            };
-          }
+            }
+            // Para funções que esperam um elemento (ex.: name), passar elem.element
+            return sorter(elem.element);
+          };
         }
       }
       return sorters;
@@ -938,7 +938,7 @@
       this.items.forEach(function(item, index) {
         item.sortData['original-order'] = index;
         for (var key in sorters) {
-          item.sortData[key] = sorters[key](key === 'random' ? null : item);
+          item.sortData[key] = sorters[key](item);
         }
       });
     },
