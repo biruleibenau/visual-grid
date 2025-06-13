@@ -257,11 +257,7 @@
       this.arrange({ sortBy: 'random' });
     }
   });
-  })(window);
-  // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 5 (Layouts)
-(function(window) {
-  'use strict';
-
+  
   // Adiciona métodos ao protótipo
   Object.assign(PortfolioGrid.prototype, {
     // Modos de layout válidos
@@ -433,10 +429,8 @@
       }
     }
   });
-})(window);
+  
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 6 (Manipulação e Controle)
-(function(window) {
-  'use strict';
 
   // Adiciona métodos ao protótipo
   Object.assign(PortfolioGrid.prototype, {
@@ -459,7 +453,7 @@
       const filterResult = this._filter();
       this._sort();
       this._hideReveal(filterResult);
-      this.layout();
+      this.layout(); *Uncaught TypeError: this.layout is not a function erro aqui
     },
 
     // Valida uma opção com base na chave
