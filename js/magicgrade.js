@@ -13,16 +13,16 @@
 
     this.defaults = {
       itemSelector: '.grid-item',
-      layoutMode: 'fitRows',
-      columnWidth: 200,
+      layoutMode: 'masonry', // Alinhado com o código antigo
+      columnWidth: 'auto', // Alinhado com o código antigo
       gutter: 10,
       transitionDuration: '0.4s',
-      percentPosition: false,
+      percentPosition: true, // Alinhado com o código antigo
       filter: '*',
-      sortBy: 'name',
+      sortBy: 'original-order', // Alinhado com o código antigo
       sortAscending: true,
       getSortData: {
-        name: function(elem) { return elem.textContent.toLowerCase(); },
+        name: function(elem) { return elem.textContent; }, // Alinhado com o código antigo
         order: '[data-order]',
         random: function() { return Math.random(); }
       },
@@ -48,7 +48,9 @@
         return;
       }
       this.items.forEach(function(item) {
+        // Aplica transição e estado inicial visível
         item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+        Object.assign(item.element.style, this.options.visibleStyle); // Garante estado inicial
       }, this);
       this._getSize();
       this._updateSortData();
@@ -99,7 +101,7 @@
           const itemStyles = getComputedStyle(firstItem.element);
           this.columnWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
         } else {
-          this.columnWidth = this.defaults.columnWidth;
+          this.columnWidth = this.size.innerWidth; // Alinhado com o código antigo
         }
       } else if (typeof this.options.columnWidth === 'number' && !isNaN(this.options.columnWidth)) {
         this.columnWidth = this.options.columnWidth;
@@ -122,7 +124,6 @@
       const result = { needReveal: [], needHide: [] };
       this.items.forEach(function(item) {
         const shouldBeVisible = filterFn(item.element);
-        item.isVisible = shouldBeVisible;
         if (shouldBeVisible && !item.isVisible) {
           result.needReveal.push(item);
         } else if (!shouldBeVisible && item.isVisible) {
@@ -260,17 +261,12 @@
 
   // Parte 5: Layouts
   Object.assign(PortfolioGrid.prototype, {
-    // Modos de layout válidos
     _validModes: ['masonry', 'fitRows'],
-
-    // Método principal para aplicar layout
     layout: function() {
       this._resetLayout();
       this._layoutItems();
       this._postLayout();
     },
-
-    // Redefine o estado do layout
     _resetLayout: function() {
       this._getSize();
       const layoutMode = this._validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
@@ -285,7 +281,6 @@
       if (this.options.percentPosition !== percentPosition) {
         console.warn('PortfolioGrid: percentPosition inválido, usando padrão:', this.defaults.percentPosition);
       }
-
       if (layoutMode === 'masonry') {
         this.cols = Math.max(1, Math.floor(this.size.innerWidth / (this.columnWidth + gutter)));
         this.colYs = new Array(this.cols).fill(0);
@@ -295,8 +290,6 @@
       }
       this.maxY = 0;
     },
-
-    // Posiciona os itens
     _layoutItems: function() {
       const layoutMode = this._validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
       if (layoutMode === 'masonry') {
@@ -305,8 +298,6 @@
         this._layoutFitRows();
       }
     },
-
-    // Layout Masonry
     _layoutMasonry: function() {
       const gutter = typeof this.options.gutter === 'number' && !isNaN(this.options.gutter) ? this.options.gutter : this.defaults.gutter;
       this.items.forEach(function(item) {
@@ -316,22 +307,17 @@
         }
       }, this);
     },
-
-    // Layout FitRows
     _layoutFitRows: function() {
       const gutter = typeof this.options.gutter === 'number' && !isNaN(this.options.gutter) ? this.options.gutter : this.defaults.gutter;
       const percentPosition = typeof this.options.percentPosition === 'boolean' ? this.options.percentPosition : this.defaults.percentPosition;
       let x = 0;
       let maxRowHeight = 0;
       this.rowY = 0;
-
       this.items.forEach(function(item) {
         if (item.isVisible) {
           const itemStyles = getComputedStyle(item.element);
           let itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft || 0) + parseFloat(itemStyles.marginRight || 0);
           let itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop || 0) + parseFloat(itemStyles.marginBottom || 0);
-
-          // Fallback para tamanhos inválidos
           if (isNaN(itemWidth) || itemWidth <= 0) {
             console.warn('PortfolioGrid: Item com largura inválida, usando columnWidth:', this.columnWidth);
             itemWidth = this.columnWidth;
@@ -340,13 +326,11 @@
             console.warn('PortfolioGrid: Item com altura inválida, usando padrão:', this.columnWidth);
             itemHeight = this.columnWidth;
           }
-
           if (x + itemWidth > this.size.innerWidth) {
             this.rowY += maxRowHeight + gutter;
             x = 0;
             maxRowHeight = 0;
           }
-
           const posX = percentPosition ? (x / this.size.innerWidth) * 100 + '%' : x + 'px';
           const posY = percentPosition ? (this.rowY / this.size.innerHeight) * 100 + '%' : this.rowY + 'px';
           this._positionItem(item, posX, posY);
@@ -357,16 +341,12 @@
       }, this);
       this.maxRowHeight = maxRowHeight;
     },
-
-    // Calcula a posição de um item (para Masonry)
     _getItemLayoutPosition: function(item) {
       const gutter = typeof this.options.gutter === 'number' && !isNaN(this.options.gutter) ? this.options.gutter : this.defaults.gutter;
       const percentPosition = typeof this.options.percentPosition === 'boolean' ? this.options.percentPosition : this.defaults.percentPosition;
       const itemStyles = getComputedStyle(item.element);
       let itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft || 0) + parseFloat(itemStyles.marginRight || 0);
       let itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop || 0) + parseFloat(itemStyles.marginBottom || 0);
-
-      // Fallback para tamanhos inválidos
       if (isNaN(itemWidth) || itemWidth <= 0) {
         console.warn('PortfolioGrid: Item com largura inválida, usando columnWidth:', this.columnWidth);
         itemWidth = this.columnWidth;
@@ -375,20 +355,16 @@
         console.warn('PortfolioGrid: Item com altura inválida, usando padrão:', this.columnWidth);
         itemHeight = this.columnWidth;
       }
-
       const colSpan = Math.min(Math.ceil(itemWidth / (this.columnWidth + gutter)), this.cols);
       const colGroup = this._getTopColGroup(colSpan);
       const minY = Math.min.apply(Math, colGroup);
       const colIndex = colGroup.indexOf(minY);
-
       let x = colIndex * (this.columnWidth + gutter);
       let y = minY;
-
       for (let i = colIndex; i < colIndex + colSpan; i++) {
         this.colYs[i] = y + itemHeight + gutter;
       }
       this.maxY = Math.max(this.maxY, y + itemHeight + gutter);
-
       if (percentPosition) {
         x = (x / this.size.innerWidth) * 100 + '%';
         y = (y / this.size.innerHeight) * 100 + '%';
@@ -396,11 +372,8 @@
         x += 'px';
         y += 'px';
       }
-
       return { x: x, y: y };
     },
-
-    // Obtém grupo de colunas
     _getTopColGroup: function(colSpan) {
       if (colSpan === 1) return this.colYs;
       const group = [];
@@ -409,15 +382,11 @@
       }
       return group;
     },
-
-    // Posiciona um item no grid
     _positionItem: function(item, x, y) {
       item.element.style.position = 'absolute';
       item.element.style.left = x;
       item.element.style.top = y;
     },
-
-    // Finaliza o layout ajustando o contêiner
     _postLayout: function() {
       const gutter = typeof this.options.gutter === 'number' && !isNaN(this.options.gutter) ? this.options.gutter : this.defaults.gutter;
       const extraHeight = gutter;
@@ -448,7 +417,10 @@
       const filterResult = this._filter();
       this._sort();
       this._hideReveal(filterResult);
-      this.layout();
+      // Atraso para esperar transições de hide completarem
+      setTimeout(() => {
+        this.layout();
+      }, parseFloat(this.options.transitionDuration) * 1000);
     },
 
     _validateOption: function(key, value) {
@@ -500,7 +472,6 @@
           sortData: { 'original-order': this.items.length + index }
         };
       }, this).filter(item => item);
-
       if (!newItems.length) {
         console.warn('PortfolioGrid: Nenhum item válido para adicionar.');
       }
@@ -532,12 +503,10 @@
         console.warn('PortfolioGrid: Nenhum elemento válido para remover.');
         return;
       }
-
       const itemsToRemove = this.items.filter(item => validElements.includes(item.element));
       if (itemsToRemove.length) {
         const duration = parseFloat(this.options.transitionDuration) || parseFloat(this.defaults.transitionDuration);
         const hiddenStyle = typeof this.options.hiddenStyle === 'object' ? this.options.hiddenStyle : this.defaults.hiddenStyle;
-
         itemsToRemove.forEach(item => {
           Object.assign(item.element.style, hiddenStyle);
           setTimeout(() => {
