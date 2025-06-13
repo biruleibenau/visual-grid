@@ -328,18 +328,13 @@
 
   // Adiciona métodos ao protótipo
   Object.assign(PortfolioGrid.prototype, {
-    // Método principal para aplicar layout
-    layout: function() {
-      this._resetLayout();
-      this._layoutItems();
-      this._postLayout();
-    },
+    // Modos de layout válidos
+    _validModes: ['masonry', 'fitRows'],
 
     // Redefine o estado do layout
     _resetLayout: function() {
       this._getSize();
-      const validModes = ['masonry', 'fitRows'];
-      const layoutMode = validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
+      const layoutMode = this._validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
       if (this.options.layoutMode !== layoutMode) {
         console.warn('PortfolioGrid: layoutMode inválido, usando padrão:', this.defaults.layoutMode);
       }
@@ -364,7 +359,7 @@
 
     // Posiciona os itens
     _layoutItems: function() {
-      const layoutMode = validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
+      const layoutMode = this._validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
       if (layoutMode === 'masonry') {
         this._layoutMasonry();
       } else {
