@@ -1,10 +1,9 @@
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 1 (Inicialização)
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas
 (function(window) {
   'use strict';
 
-  // Construtor da biblioteca
+  // Parte 1: Inicialização
   function PortfolioGrid(element, options) {
-    // Converte elemento ou seletor em elemento DOM
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) {
       console.warn('PortfolioGrid: Elemento não encontrado, criando contêiner padrão:', element);
@@ -12,16 +11,15 @@
       document.body.appendChild(this.element);
     }
 
-    // Opções padrão
     this.defaults = {
-      itemSelector: '.grid-item', // Seletor padrão para itens do grid
-      layoutMode: 'fitRows', // Modo de layout (alinhado com seu exemplo)
-      columnWidth: 200, // Valor fixo como fallback
+      itemSelector: '.grid-item',
+      layoutMode: 'fitRows',
+      columnWidth: 200,
       gutter: 10,
       transitionDuration: '0.4s',
-      percentPosition: false, // Alinhado com seu exemplo
+      percentPosition: false,
       filter: '*',
-      sortBy: 'name', // Alinhado com seu exemplo
+      sortBy: 'name',
       sortAscending: true,
       getSortData: {
         name: function(elem) { return elem.textContent.toLowerCase(); },
@@ -32,55 +30,33 @@
       visibleStyle: { opacity: 1, transform: 'scale(1)' }
     };
 
-    // Mescla opções fornecidas com padrão
     this.options = Object.assign({}, this.defaults, options || {});
-
-    // Valida itemSelector
     if (!this.options.itemSelector || typeof this.options.itemSelector !== 'string') {
       console.warn('PortfolioGrid: itemSelector inválido, usando padrão:', this.defaults.itemSelector);
       this.options.itemSelector = this.defaults.itemSelector;
     }
 
-    // Inicializa o grid
     this._init();
   }
 
-  // Métodos do protótipo
   PortfolioGrid.prototype = {
-    // Inicialização
     _init: function() {
-      // Configura o contêiner
       this.element.style.position = 'relative';
-
-      // Coleta os itens
       this.items = this._getItems();
-
-      // Verifica se há itens
       if (!this.items.length) {
         console.warn('PortfolioGrid: Nenhum item encontrado com o seletor:', this.options.itemSelector);
         return;
       }
-
-      // Aplica transições aos itens
       this.items.forEach(function(item) {
         item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
       }, this);
-
-      // Calcula tamanhos
       this._getSize();
-
-      // Atualiza dados de ordenação
       this._updateSortData();
-
-      // Aplica layout inicial
       this.arrange();
-
-      // Adiciona listener de redimensionamento com debounce
       this._debouncedArrange = this._debounce(() => this.arrange(), 100);
       window.addEventListener('resize', this._debouncedArrange);
     },
 
-    // Função de debounce para otimizar eventos
     _debounce: function(func, wait) {
       let timeout;
       return function() {
@@ -90,36 +66,24 @@
     }
   };
 
-  // Expor a biblioteca globalmente
-  window.PortfolioGrid = PortfolioGrid;
-})(window);
-
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 2 (Itens e Tamanhos)
-(function(window) {
-  'use strict';
-
-  // Adiciona métodos ao protótipo
+  // Parte 2: Itens e Tamanhos
   Object.assign(PortfolioGrid.prototype, {
-    // Coleta itens do grid com base em itemSelector
     _getItems: function() {
       const selector = this.options.itemSelector;
       const elements = this.element.querySelectorAll(selector);
       const items = Array.from(elements).map(function(elem, index) {
         return {
           element: elem,
-          isVisible: true, // Estado inicial: visível
-          sortData: { 'original-order': index } // Ordem inicial
+          isVisible: true,
+          sortData: { 'original-order': index }
         };
       });
-
       if (!items.length) {
         console.warn('PortfolioGrid: Nenhum item encontrado com o seletor:', selector);
       }
-
       return items;
     },
 
-    // Calcula tamanhos do contêiner e itens
     _getSize: function() {
       const rect = this.element.getBoundingClientRect();
       const styles = getComputedStyle(this.element);
@@ -129,44 +93,36 @@
         height: rect.height,
         innerHeight: rect.height - (parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom))
       };
-
-      // Define largura da coluna
       if (this.options.columnWidth === 'auto') {
         const firstItem = this.items[0];
         if (firstItem) {
           const itemStyles = getComputedStyle(firstItem.element);
           this.columnWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
         } else {
-          this.columnWidth = this.defaults.columnWidth; // Fallback para valor padrão (ex.: 200)
+          this.columnWidth = this.defaults.columnWidth;
         }
       } else if (typeof this.options.columnWidth === 'number' && !isNaN(this.options.columnWidth)) {
         this.columnWidth = this.options.columnWidth;
       } else {
         console.warn('PortfolioGrid: columnWidth inválido, usando padrão:', this.defaults.columnWidth);
-        this.columnWidth = this.defaults.columnWidth; // Fallback para valor padrão
+        this.columnWidth = this.defaults.columnWidth;
       }
     }
   });
-})(window);
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 3 (Filtragem e Animações)
-(function(window) {
-  'use strict';
 
-  // Adiciona métodos ao protótipo
+  // Parte 3: Filtragem e Animações
   Object.assign(PortfolioGrid.prototype, {
-    // Filtra itens com base em options.filter
     _filter: function() {
       let filter = this.options.filter;
-      // Valida o filtro
       if (!filter || (typeof filter !== 'string' && typeof filter !== 'function')) {
         console.warn('PortfolioGrid: Filtro inválido, usando padrão:', this.defaults.filter);
-        filter = this.defaults.filter; // Fallback para '*'
+        filter = this.defaults.filter;
       }
       const filterFn = this._getFilterTest(filter);
       const result = { needReveal: [], needHide: [] };
-
       this.items.forEach(function(item) {
         const shouldBeVisible = filterFn(item.element);
+ item.isVisible = shouldBeVisible;
         if (shouldBeVisible && !item.isVisible) {
           result.needReveal.push(item);
         } else if (!shouldBeVisible && item.isVisible) {
@@ -174,16 +130,12 @@
         }
         item.isVisible = shouldBeVisible;
       });
-
-      // Aviso se nenhum item passar no filtro
       if (!result.needReveal.length && !this.items.some(item => item.isVisible)) {
         console.warn('PortfolioGrid: Nenhum item corresponde ao filtro:', filter);
       }
-
       return result;
     },
 
-    // Cria função de teste para filtro
     _getFilterTest: function(filter) {
       if (filter === '*') {
         return function() { return true; };
@@ -196,18 +148,16 @@
           return element.matches(filter);
         } catch (e) {
           console.warn('PortfolioGrid: Filtro CSS inválido:', filter);
-          return false; // Fallback para não quebrar
+          return false;
         }
       };
     },
 
-    // Aplica animações de mostrar/esconder
     _hideReveal: function(filterResult) {
       this.hide(filterResult.needHide);
       this.reveal(filterResult.needReveal);
     },
 
-    // Esconde itens com animação
     hide: function(items) {
       const hiddenStyle = typeof this.options.hiddenStyle === 'object' ? this.options.hiddenStyle : this.defaults.hiddenStyle;
       let duration = parseFloat(this.options.transitionDuration) || parseFloat(this.defaults.transitionDuration);
@@ -215,7 +165,6 @@
         console.warn('PortfolioGrid: transitionDuration inválido, usando padrão:', this.defaults.transitionDuration);
         duration = parseFloat(this.defaults.transitionDuration);
       }
-
       items.forEach(function(item) {
         Object.assign(item.element.style, hiddenStyle);
         setTimeout(() => {
@@ -226,7 +175,6 @@
       }, this);
     },
 
-    // Mostra itens com animação
     reveal: function(items) {
       const visibleStyle = typeof this.options.visibleStyle === 'object' ? this.options.visibleStyle : this.defaults.visibleStyle;
       items.forEach(function(item) {
@@ -235,28 +183,20 @@
       }, this);
     }
   });
-})(window);
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 4 (Ordenação)
-(function(window) {
-  'use strict';
 
-  // Adiciona métodos ao protótipo
+  // Parte 4: Ordenação
   Object.assign(PortfolioGrid.prototype, {
-    // Ordena itens com base em sortBy
     _sort: function() {
       let sortBy = this.options.sortBy;
-      // Valida sortBy
       const validSortKeys = Object.keys(this.options.getSortData || {});
       if (!sortBy || sortBy === 'none' || (typeof sortBy !== 'string' && !Array.isArray(sortBy)) || 
           (typeof sortBy === 'string' && !validSortKeys.includes(sortBy)) ||
           (Array.isArray(sortBy) && !sortBy.every(key => validSortKeys.includes(key)))) {
         console.warn('PortfolioGrid: sortBy inválido, usando padrão:', this.defaults.sortBy);
-        sortBy = this.defaults.sortBy; // Fallback para 'name'
+        sortBy = this.defaults.sortBy;
       }
-
       const sortAscending = typeof this.options.sortAscending === 'boolean' ? this.options.sortAscending : this.defaults.sortAscending;
       const sorters = this._getSorters();
-
       this.items.sort(function(a, b) {
         const keys = Array.isArray(sortBy) ? sortBy : [sortBy];
         for (let i = 0; i < keys.length; i++) {
@@ -271,11 +211,9 @@
       });
     },
 
-    // Cria funções de ordenação
     _getSorters: function() {
       const getSortData = typeof this.options.getSortData === 'object' ? this.options.getSortData : this.defaults.getSortData;
       const sorters = {};
-
       for (let key in getSortData) {
         const sorter = getSortData[key];
         if (typeof sorter === 'string') {
@@ -302,7 +240,6 @@
       return sorters;
     },
 
-    // Atualiza dados de ordenação
     _updateSortData: function() {
       const sorters = this._getSorters();
       this.items.forEach(function(item, index) {
@@ -313,7 +250,6 @@
       });
     },
 
-    // Ordena itens aleatoriamente
     shuffle: function() {
       this.items.forEach(function(item) {
         item.sortData['random'] = Math.random();
@@ -321,8 +257,8 @@
       this.arrange({ sortBy: 'random' });
     }
   });
-})(window);
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 5 (Layouts)
+  })(window);
+  // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 5 (Layouts)
 (function(window) {
   'use strict';
 
@@ -330,6 +266,13 @@
   Object.assign(PortfolioGrid.prototype, {
     // Modos de layout válidos
     _validModes: ['masonry', 'fitRows'],
+
+    // Método principal para aplicar layout
+    layout: function() {
+      this._resetLayout();
+      this._layoutItems();
+      this._postLayout();
+    },
 
     // Redefine o estado do layout
     _resetLayout: function() {
@@ -491,7 +434,7 @@
     }
   });
 })(window);
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 6 (Manipulação e Arrange)
+// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 6 (Manipulação e Controle)
 (function(window) {
   'use strict';
 
@@ -629,7 +572,6 @@
 
     // Métodos opcionais (mantidos comentados)
     /*
-    // Insere itens no grid
     insert: function(elements) {
       const newItems = this._itemize(elements);
       if (newItems.length) {
@@ -639,7 +581,6 @@
       }
     },
 
-    // Marca elementos como fixos (stamp)
     stamp: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
       this.stamps = this.stamps || [];
@@ -647,26 +588,23 @@
       this.arrange();
     },
 
-    // Remove marcação de elementos fixos (unstamp)
     unstamp: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
       this.stamps = this.stamps.filter(stamp => !elements.includes(stamp.element));
       this.arrange();
     },
 
-    // Ignora itens sem removê-los
     ignore: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
       this.items.forEach(item => {
         if (elements.includes(item.element)) {
           item.isIgnored = true;
-          item.isVisible = false;
+          item.isVisible = '';
         }
       });
       this.arrange();
     },
 
-    // Reativa itens ignorados
     unignore: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
       this.items.forEach(item => {
@@ -678,12 +616,12 @@
       this.arrange();
     },
 
-    // Sistema de eventos
     on: function(eventName, callback) {
       this._events = this._events || {};
       this._events[eventName] = this._events[eventName] || [];
       this._events[eventName].push(callback);
     },
+
     emit: function(eventName, ...args) {
       if (this._events && this._events[eventName]) {
         this._events[eventName].forEach(callback => callback(...args));
