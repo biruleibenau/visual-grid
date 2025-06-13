@@ -13,16 +13,16 @@
 
     this.defaults = {
       itemSelector: '.grid-item',
-      layoutMode: 'masonry', // Alinhado com o código antigo
-      columnWidth: 'auto', // Alinhado com o código antigo
+      layoutMode: 'masonry',
+      columnWidth: 'auto',
       gutter: 10,
-      transitionDuration: '0.4s',
-      percentPosition: true, // Alinhado com o código antigo
+      transitionDuration: '0.3s', // Reduzido de 0.4s pra 0.3s pra um fade mais rápido
+      percentPosition: true,
       filter: '*',
-      sortBy: 'original-order', // Alinhado com o código antigo
+      sortBy: 'original-order',
       sortAscending: true,
       getSortData: {
-        name: function(elem) { return elem.textContent; }, // Alinhado com o código antigo
+        name: function(elem) { return elem.textContent; },
         order: '[data-order]',
         random: function() { return Math.random(); }
       },
@@ -48,9 +48,8 @@
         return;
       }
       this.items.forEach(function(item) {
-        // Aplica transição e estado inicial visível
         item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
-        Object.assign(item.element.style, this.options.visibleStyle); // Garante estado inicial
+        Object.assign(item.element.style, this.options.visibleStyle);
       }, this);
       this._getSize();
       this._updateSortData();
@@ -101,7 +100,7 @@
           const itemStyles = getComputedStyle(firstItem.element);
           this.columnWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
         } else {
-          this.columnWidth = this.size.innerWidth; // Alinhado com o código antigo
+          this.columnWidth = this.size.innerWidth;
         }
       } else if (typeof this.options.columnWidth === 'number' && !isNaN(this.options.columnWidth)) {
         this.columnWidth = this.options.columnWidth;
@@ -270,17 +269,8 @@
     _resetLayout: function() {
       this._getSize();
       const layoutMode = this._validModes.includes(this.options.layoutMode) ? this.options.layoutMode : this.defaults.layoutMode;
-      if (this.options.layoutMode !== layoutMode) {
-        console.warn('PortfolioGrid: layoutMode inválido, usando padrão:', this.defaults.layoutMode);
-      }
       const gutter = typeof this.options.gutter === 'number' && !isNaN(this.options.gutter) ? this.options.gutter : this.defaults.gutter;
-      if (this.options.gutter !== gutter) {
-        console.warn('PortfolioGrid: gutter inválido, usando padrão:', this.defaults.gutter);
-      }
       const percentPosition = typeof this.options.percentPosition === 'boolean' ? this.options.percentPosition : this.defaults.percentPosition;
-      if (this.options.percentPosition !== percentPosition) {
-        console.warn('PortfolioGrid: percentPosition inválido, usando padrão:', this.defaults.percentPosition);
-      }
       if (layoutMode === 'masonry') {
         this.cols = Math.max(1, Math.floor(this.size.innerWidth / (this.columnWidth + gutter)));
         this.colYs = new Array(this.cols).fill(0);
@@ -319,11 +309,9 @@
           let itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft || 0) + parseFloat(itemStyles.marginRight || 0);
           let itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop || 0) + parseFloat(itemStyles.marginBottom || 0);
           if (isNaN(itemWidth) || itemWidth <= 0) {
-            console.warn('PortfolioGrid: Item com largura inválida, usando columnWidth:', this.columnWidth);
             itemWidth = this.columnWidth;
           }
           if (isNaN(itemHeight) || itemHeight <= 0) {
-            console.warn('PortfolioGrid: Item com altura inválida, usando padrão:', this.columnWidth);
             itemHeight = this.columnWidth;
           }
           if (x + itemWidth > this.size.innerWidth) {
@@ -348,11 +336,9 @@
       let itemWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft || 0) + parseFloat(itemStyles.marginRight || 0);
       let itemHeight = parseFloat(itemStyles.height) + parseFloat(itemStyles.marginTop || 0) + parseFloat(itemStyles.marginBottom || 0);
       if (isNaN(itemWidth) || itemWidth <= 0) {
-        console.warn('PortfolioGrid: Item com largura inválida, usando columnWidth:', this.columnWidth);
         itemWidth = this.columnWidth;
       }
       if (isNaN(itemHeight) || itemHeight <= 0) {
-        console.warn('PortfolioGrid: Item com altura inválida, usando padrão:', this.columnWidth);
         itemHeight = this.columnWidth;
       }
       const colSpan = Math.min(Math.ceil(itemWidth / (this.columnWidth + gutter)), this.cols);
@@ -417,10 +403,10 @@
       const filterResult = this._filter();
       this._sort();
       this._hideReveal(filterResult);
-      // Atraso para esperar transições de hide completarem
+      // Atraso reduzido pra 0.25s (250ms) pra evitar sensação de travamento
       setTimeout(() => {
         this.layout();
-      }, parseFloat(this.options.transitionDuration) * 1000);
+      }, parseFloat(this.options.transitionDuration) * 1000 * 0.83); // 0.3s * 0.83 ≈ 250ms
     },
 
     _validateOption: function(key, value) {
