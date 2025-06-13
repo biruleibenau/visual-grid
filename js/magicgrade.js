@@ -108,7 +108,7 @@
         this.columnWidth = this.defaults.columnWidth;
       }
     }
-	
+  });
 
   // Parte 3: Filtragem e Animações
   Object.assign(PortfolioGrid.prototype, {
@@ -122,7 +122,7 @@
       const result = { needReveal: [], needHide: [] };
       this.items.forEach(function(item) {
         const shouldBeVisible = filterFn(item.element);
- item.isVisible = shouldBeVisible;
+        item.isVisible = shouldBeVisible;
         if (shouldBeVisible && !item.isVisible) {
           result.needReveal.push(item);
         } else if (!shouldBeVisible && item.isVisible) {
@@ -185,7 +185,7 @@
   });
 
   // Parte 4: Ordenação
-  
+  Object.assign(PortfolioGrid.prototype, {
     _sort: function() {
       let sortBy = this.options.sortBy;
       const validSortKeys = Object.keys(this.options.getSortData || {});
@@ -256,9 +256,10 @@
       });
       this.arrange({ sortBy: 'random' });
     }
-  
-  // Adiciona métodos ao protótipo
-  
+  });
+
+  // Parte 5: Layouts
+  Object.assign(PortfolioGrid.prototype, {
     // Modos de layout válidos
     _validModes: ['masonry', 'fitRows'],
 
@@ -419,22 +420,19 @@
     // Finaliza o layout ajustando o contêiner
     _postLayout: function() {
       const gutter = typeof this.options.gutter === 'number' && !isNaN(this.options.gutter) ? this.options.gutter : this.defaults.gutter;
-      // Adiciona margem de segurança para garantir que todos os itens sejam visíveis
-      const extraHeight = gutter; // Margem extra
+      const extraHeight = gutter;
       if (this.options.layoutMode === 'fitRows') {
         this.element.style.height = (this.maxY + gutter + extraHeight) + 'px';
       } else {
-        this.element.style.height = (this.maxY + extraHeight) + 'px'; // Ajustado para masonry
+        this.element.style.height = (this.maxY + extraHeight) + 'px';
       }
     }
-  
-// PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 6 (Manipulação e Controle)
+  });
 
-  // Adiciona métodos ao protótipo
-    // Método principal para configurar filtro, ordenação e layout
+  // Parte 6: Manipulação e Arrange
+  Object.assign(PortfolioGrid.prototype, {
     arrange: function(options) {
       if (options) {
-        // Valida opções antes de mesclar
         const validatedOptions = {};
         const validKeys = Object.keys(this.defaults);
         for (let key in options) {
@@ -450,10 +448,9 @@
       const filterResult = this._filter();
       this._sort();
       this._hideReveal(filterResult);
-      this.layout(); *Uncaught TypeError: this.layout is not a function erro aqui
+      this.layout();
     },
 
-    // Valida uma opção com base na chave
     _validateOption: function(key, value) {
       const defaults = this.defaults;
       switch (key) {
@@ -485,7 +482,6 @@
       }
     },
 
-    // Converte elementos em itens do grid
     _itemize: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
       const newItems = elements.map(function(elem, index) {
@@ -511,7 +507,6 @@
       return newItems;
     },
 
-    // Adiciona itens ao final do grid
     appended: function(elements) {
       const newItems = this._itemize(elements);
       if (newItems.length) {
@@ -521,7 +516,6 @@
       }
     },
 
-    // Adiciona itens ao início do grid
     prepended: function(elements) {
       const newItems = this._itemize(elements);
       if (newItems.length) {
@@ -531,7 +525,6 @@
       }
     },
 
-    // Remove itens do grid
     remove: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
       const validElements = elements.filter(el => el instanceof HTMLElement);
@@ -560,64 +553,8 @@
         console.warn('PortfolioGrid: Nenhum item correspondente encontrado para remover.');
       }
     }
-
-    // Métodos opcionais (mantidos comentados)
-    /*
-    insert: function(elements) {
-      const newItems = this._itemize(elements);
-      if (newItems.length) {
-        this.items = this.items.concat(newItems);
-        this._updateSortData();
-        this.arrange();
-      }
-    },
-
-    stamp: function(elements) {
-      elements = Array.isArray(elements) ? elements : [elements];
-      this.stamps = this.stamps || [];
-      this.stamps = this.stamps.concat(elements.map(el => ({ element: el })));
-      this.arrange();
-    },
-
-    unstamp: function(elements) {
-      elements = Array.isArray(elements) ? elements : [elements];
-      this.stamps = this.stamps.filter(stamp => !elements.includes(stamp.element));
-      this.arrange();
-    },
-
-    ignore: function(elements) {
-      elements = Array.isArray(elements) ? elements : [elements];
-      this.items.forEach(item => {
-        if (elements.includes(item.element)) {
-          item.isIgnored = true;
-          item.isVisible = '';
-        }
-      });
-      this.arrange();
-    },
-
-    unignore: function(elements) {
-      elements = Array.isArray(elements) ? elements : [elements];
-      this.items.forEach(item => {
-        if (elements.includes(item.element)) {
-          delete item.isIgnored;
-          item.isVisible = true;
-        }
-      });
-      this.arrange();
-    },
-
-    on: function(eventName, callback) {
-      this._events = this._events || {};
-      this._events[eventName] = this._events[eventName] || [];
-      this._events[eventName].push(callback);
-    },
-
-    emit: function(eventName, ...args) {
-      if (this._events && this._events[eventName]) {
-        this._events[eventName].forEach(callback => callback(...args));
-      }
-    }
-    */
   });
+
+  // Exporta PortfolioGrid pro escopo global
+  window.PortfolioGrid = PortfolioGrid;
 })(window);
