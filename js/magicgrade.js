@@ -13,16 +13,16 @@
 
     this.defaults = {
       itemSelector: '.grid-item',
-      layoutMode: 'masonry',
-      columnWidth: 'auto',
+      layoutMode: 'fitRows', // Alinhado com sua inicialização
+      columnWidth: 200, // Alinhado com sua inicialização
       gutter: 10,
-      transitionDuration: '0.3s', // Reduzido de 0.4s pra 0.3s pra um fade mais rápido
-      percentPosition: true,
+      transitionDuration: '0.4s', // Alinhado com sua inicialização
+      percentPosition: false, // Alinhado com sua inicialização
       filter: '*',
-      sortBy: 'original-order',
+      sortBy: 'name', // Alinhado com sua inicialização
       sortAscending: true,
       getSortData: {
-        name: function(elem) { return elem.textContent; },
+        name: function(elem) { return elem.textContent.toLowerCase(); }, // Alinhado com sua inicialização
         order: '[data-order]',
         random: function() { return Math.random(); }
       },
@@ -403,10 +403,9 @@
       const filterResult = this._filter();
       this._sort();
       this._hideReveal(filterResult);
-      // Atraso reduzido pra 0.25s (250ms) pra evitar sensação de travamento
       setTimeout(() => {
         this.layout();
-      }, parseFloat(this.options.transitionDuration) * 1000 * 0.83); // 0.3s * 0.83 ≈ 250ms
+      }, parseFloat(this.options.transitionDuration) * 1000 * 0.83); // 0.4s * 0.83 ≈ 332ms
     },
 
     _validateOption: function(key, value) {
