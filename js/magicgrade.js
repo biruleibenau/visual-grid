@@ -108,7 +108,7 @@
         this.columnWidth = this.defaults.columnWidth;
       }
     }
-  });
+	
 
   // Parte 3: Filtragem e Animações
   Object.assign(PortfolioGrid.prototype, {
@@ -185,7 +185,7 @@
   });
 
   // Parte 4: Ordenação
-  Object.assign(PortfolioGrid.prototype, {
+  
     _sort: function() {
       let sortBy = this.options.sortBy;
       const validSortKeys = Object.keys(this.options.getSortData || {});
@@ -256,10 +256,9 @@
       });
       this.arrange({ sortBy: 'random' });
     }
-  });
   
   // Adiciona métodos ao protótipo
-  Object.assign(PortfolioGrid.prototype, {
+  
     // Modos de layout válidos
     _validModes: ['masonry', 'fitRows'],
 
@@ -428,12 +427,10 @@
         this.element.style.height = (this.maxY + extraHeight) + 'px'; // Ajustado para masonry
       }
     }
-  });
   
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 6 (Manipulação e Controle)
 
   // Adiciona métodos ao protótipo
-  Object.assign(PortfolioGrid.prototype, {
     // Método principal para configurar filtro, ordenação e layout
     arrange: function(options) {
       if (options) {
