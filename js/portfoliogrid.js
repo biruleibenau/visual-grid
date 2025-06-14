@@ -548,7 +548,8 @@
   window.PortfolioGrid = PortfolioGrid;
 })(window);// parte 3
 
-///(function(window) {
+//// parte 4
+(function(window) {
   'use strict';
 
   function PortfolioGrid(element, options) {
