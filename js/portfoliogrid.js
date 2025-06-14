@@ -548,8 +548,7 @@
   window.PortfolioGrid = PortfolioGrid;
 })(window);// parte 3
 
-///parte 4
-(function(window) {
+///(function(window) {
   'use strict';
 
   function PortfolioGrid(element, options) {
@@ -561,22 +560,15 @@
 
     this.defaults = {
       itemSelector: '.grid-item',
-      layoutMode: 'fitRows', // Padrão alterado para fitRows
+      layoutMode: 'fitRows',
       columnWidth: 'auto',
       gutter: 10,
       transitionDuration: '0.4s',
-      percentPosition: false, // Padrão alterado para false
+      percentPosition: false,
       filter: '*',
       sortBy: 'original-order',
       sortAscending: true,
-      getSortData: {
-        name: function(elem) {
-          // Fallback para atributo data-name ou texto de um elemento filho
-          return elem.getAttribute('data-name') || elem.textContent || '';
-        },
-        order: '[data-order]',
-        random: function() { return Math.random(); }
-      },
+      getSortData: null, // Padrão alinhado com Isotope
       hiddenStyle: { opacity: 0, transform: 'scale(0.5)' },
       visibleStyle: { opacity: 1, transform: 'scale(1)' }
     };
@@ -597,7 +589,9 @@
         item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
       }, this);
       this._getSize();
-      this._updateSortData();
+      if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
+        this._updateSortData();
+      }
       this.arrange();
       window.addEventListener('resize', () => this.arrange());
     },
@@ -641,7 +635,9 @@
       if (options) {
         this.options = Object.assign({}, this.options, options);
       }
-      this._updateSortData();
+      if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
+        this._updateSortData();
+      }
       var filterResult = this._filter();
       this._sort();
       this._hideReveal(filterResult);
@@ -712,7 +708,6 @@
         var keys = Array.isArray(sortBy) ? sortBy : [sortBy];
         for (var i = 0; i < keys.length; i++) {
           var key = keys[i];
-          var sorter = sorters[key] || function() { return 0; };
           var valueA = a.sortData[key];
           var valueB = b.sortData[key];
           if (valueA === undefined || valueB === undefined) return 0;
@@ -752,12 +747,16 @@
 
     _updateSortData: function() {
       var sorters = this._getSorters();
-      this.items.forEach(function(item, index) {
-        item.sortData['original-order'] = index;
+      this.items.forEach(function(item) {
+        item.sortData = item.sortData || {};
+        item.sortData['original-order'] = this.items.indexOf(item);
         for (var key in sorters) {
-          item.sortData[key] = sorters[key](item);
+          var value = sorters[key](item);
+          if (value !== undefined && value !== null) {
+            item.sortData[key] = value;
+          }
         }
-      });
+      }, this);
     },
 
     _itemize: function(elements) {
@@ -777,7 +776,9 @@
       var newItems = this._itemize(elements);
       if (newItems.length) {
         this.items = this.items.concat(newItems);
-        this._updateSortData();
+        if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
+          this._updateSortData();
+        }
         this.arrange();
       }
     },
@@ -786,7 +787,9 @@
       var newItems = this._itemize(elements);
       if (newItems.length) {
         this.items = newItems.concat(this.items);
-        this._updateSortData();
+        if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
+          this._updateSortData();
+        }
         this.arrange();
       }
     },
@@ -804,7 +807,9 @@
           }, parseFloat(this.options.transitionDuration) * 1000);
         });
         this.items = this.items.filter(item => !elements.includes(item.element));
-        this._updateSortData();
+        if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
+          this._updateSortData();
+        }
         this.arrange();
       }
     },
