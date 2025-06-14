@@ -546,9 +546,9 @@
   };
 
   window.PortfolioGrid = PortfolioGrid;
-})(window);// parte 3
+})(window);// fim da parte 3
 
-//// parte 4
+/// parte 4
 (function(window) {
   'use strict';
 
@@ -569,7 +569,7 @@
       filter: '*',
       sortBy: 'original-order',
       sortAscending: true,
-      getSortData: null, // Padrão alinhado com Isotope
+      getSortData: null,
       hiddenStyle: { opacity: 0, transform: 'scale(0.5)' },
       visibleStyle: { opacity: 1, transform: 'scale(1)' }
     };
@@ -586,15 +586,19 @@
         console.warn('PortfolioGrid: Nenhum item encontrado com o seletor:', this.options.itemSelector);
         return;
       }
-      this.items.forEach(function(item) {
-        item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
-      }, this);
+      this._applyTransitions(this.items);
       this._getSize();
       if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
         this._updateSortData();
       }
       this.arrange();
       window.addEventListener('resize', () => this.arrange());
+    },
+
+    _applyTransitions: function(items) {
+      items.forEach(function(item) {
+        item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+      }, this);
     },
 
     _getItems: function() {
@@ -675,24 +679,31 @@
 
     _hideReveal: function(filterResult) {
       this.hide(filterResult.needHide);
-      this.reveal(filterResult.needReveal);
+      setTimeout(() => {
+        this.reveal(filterResult.needReveal);
+      }, parseFloat(this.options.transitionDuration) * 1000 / 2);
     },
 
     hide: function(items) {
       items.forEach(function(item) {
         Object.assign(item.element.style, this.options.hiddenStyle);
-        setTimeout(() => {
+        var onTransitionEnd = () => {
           if (item.isVisible === false) {
             item.element.style.display = 'none';
           }
-        }, parseFloat(this.options.transitionDuration) * 1000);
+          item.element.removeEventListener('transitionend', onTransitionEnd);
+        };
+        item.element.addEventListener('transitionend', onTransitionEnd);
       }, this);
     },
 
     reveal: function(items) {
       items.forEach(function(item) {
+        Object.assign(item.element.style, this.options.hiddenStyle);
         item.element.style.display = '';
-        Object.assign(item.element.style, this.options.visibleStyle);
+        requestAnimationFrame(() => {
+          Object.assign(item.element.style, this.options.visibleStyle);
+        });
       }, this);
     },
 
@@ -762,7 +773,7 @@
 
     _itemize: function(elements) {
       elements = Array.isArray(elements) ? elements : [elements];
-      return elements.map(function(elem, index) {
+      var newItems = elements.map(function(elem, index) {
         if (!(elem instanceof HTMLElement)) return null;
         this.element.appendChild(elem);
         return {
@@ -771,6 +782,8 @@
           sortData: { 'original-order': this.items.length + index }
         };
       }, this).filter(item => item);
+      this._applyTransitions(newItems);
+      return newItems;
     },
 
     appended: function(elements) {
@@ -799,19 +812,19 @@
       elements = Array.isArray(elements) ? elements : [elements];
       var itemsToRemove = this.items.filter(item => elements.includes(item.element));
       if (itemsToRemove.length) {
-        itemsToRemove.forEach(item => {
-          Object.assign(item.element.style, this.options.hiddenStyle);
-          setTimeout(() => {
+        this.hide(itemsToRemove);
+        setTimeout(() => {
+          itemsToRemove.forEach(item => {
             if (item.element.parentNode) {
               item.element.parentNode.removeChild(item.element);
             }
-          }, parseFloat(this.options.transitionDuration) * 1000);
-        });
-        this.items = this.items.filter(item => !elements.includes(item.element));
-        if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
-          this._updateSortData();
-        }
-        this.arrange();
+          });
+          this.items = this.items.filter(item => !elements.includes(item.element));
+          if (this.options.sortBy !== 'original-order' && this.options.getSortData) {
+            this._updateSortData();
+          }
+          this.arrange();
+        }, parseFloat(this.options.transitionDuration) * 1000);
       }
     },
 
