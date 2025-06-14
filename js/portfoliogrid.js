@@ -570,7 +570,10 @@
       sortBy: 'original-order',
       sortAscending: true,
       getSortData: {
-        name: function(elem) { return elem.textContent || ''; },
+        name: function(elem) {
+          // Fallback para atributo data-name ou texto de um elemento filho
+          return elem.getAttribute('data-name') || elem.textContent || '';
+        },
         order: '[data-order]',
         random: function() { return Math.random(); }
       },
@@ -626,7 +629,7 @@
           var itemStyles = getComputedStyle(firstItem.element);
           this.columnWidth = parseFloat(itemStyles.width) + parseFloat(itemStyles.marginLeft) + parseFloat(itemStyles.marginRight);
         } else {
-          this.columnWidth = this.size.innerWidth / 2; // Fallback mais razoável
+          this.columnWidth = this.size.innerWidth / 2;
         }
       } else {
         this.columnWidth = this.options.columnWidth;
@@ -701,6 +704,10 @@
       if (!sortBy || sortBy === 'none') return;
       var sortAscending = this.options.sortAscending;
       var sorters = this._getSorters();
+      if (!(sortBy in sorters) && sortBy !== 'original-order') {
+        console.warn(`PortfolioGrid: sortBy "${sortBy}" inválido. Usando 'original-order'.`);
+        this.options.sortBy = 'original-order';
+      }
       this.items.sort(function(a, b) {
         var keys = Array.isArray(sortBy) ? sortBy : [sortBy];
         for (var i = 0; i < keys.length; i++) {
