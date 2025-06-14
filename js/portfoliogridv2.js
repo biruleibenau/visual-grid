@@ -1113,3 +1113,68 @@ Isotope.Item.prototype._updateClasses = function() {
 };
 
 // Fim da Parte 15
+// Comentário: Método para atualizar o layout após mudanças nos itens ou opções.
+Isotope.prototype.updateSortData = function( elems ) {
+  // Comentário: Converte elementos em instâncias de Item, se necessário.
+  var items;
+  if ( elems ) {
+    items = this._itemize( elems );
+  } else {
+    items = this.items;
+  }
+  // Comentário: Atualiza os dados de ordenação para os itens especificados.
+  this._updateItemsSortData( items );
+};
+
+// Comentário: Método para verificar se o layout precisa ser atualizado.
+Isotope.prototype.needsLayout = function() {
+  // Comentário: Verifica se houve mudanças no tamanho do container ou nos itens.
+  if ( this.needsResizeLayout() ) {
+    return true;
+  }
+  // Comentário: Verifica se algum item mudou de tamanho ou posição.
+  for ( var i=0; i < this.items.length; i++ ) {
+    var item = this.items[i];
+    if ( item.needsUpdate ) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// Comentário: Método para marcar um item como necessitando de atualização.
+Isotope.Item.prototype._setNeedsUpdate = function() {
+  this.needsUpdate = true;
+};
+
+// Comentário: Método para verificar se um item precisa de atualização.
+Isotope.Item.prototype._checkIfNeedsUpdate = function() {
+  // Comentário: Compara o tamanho atual do item com o armazenado.
+  var size = this.getSize();
+  if ( size.width != this.size.width || size.height != this.size.height ) {
+    this.size = size;
+    this.needsUpdate = true;
+  }
+};
+
+// Comentário: Método para aplicar classes CSS ao container com base no estado.
+Isotope.prototype._updateClasses = function() {
+  // Comentário: Adiciona classes como 'isotope' ao container.
+  jQuery( this.element ).addClass( 'isotope' );
+  // Comentário: Atualiza classes de todos os itens.
+  for ( var i=0; i < this.items.length; i++ ) {
+    this.items[i]._updateClasses();
+  }
+};
+
+// Comentário: Método para inicializar o Isotope automaticamente após a criação.
+Isotope.prototype._init = function() {
+  // Comentário: Configura transições, classes e eventos de redimensionamento.
+  this._setupTransition();
+  this._updateClasses();
+  this.bindResize();
+  // Comentário: Executa o layout inicial.
+  this.layout();
+};
+
+// Fim da Parte 16
