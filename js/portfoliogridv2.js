@@ -1178,3 +1178,148 @@ Isotope.prototype._init = function() {
 };
 
 // Fim da Parte 16
+// Comentário: Método para configurar o Isotope com opções iniciais e iniciar o layout.
+Isotope.prototype.arrange = function( options ) {
+  // Comentário: Mescla as novas opções com as existentes.
+  if ( options ) {
+    this.option( options );
+  }
+  // Comentário: Reaplica filtros, ordenação e layout com base nas opções.
+  this._updateFilteredItems();
+  this._updateItemsSortData( this.items );
+  this.layout();
+};
+
+// Comentário: Método para registrar extensões de layout no Isotope.
+Isotope.registerLayoutMode = function( modeName, Mode ) {
+  // Comentário: Adiciona um novo modo de layout ao objeto de modos disponíveis.
+  Isotope.LayoutMode.modes[ modeName ] = Mode;
+};
+
+// Comentário: Método para configurar o Isotope como um widget jQuery UI, se disponível.
+Isotope.prototype._createWidget = function() {
+  // Comentário: Verifica se o jQuery UI está disponível para widget.
+  if ( jQuery.fn.widget ) {
+    jQuery.widget( 'isotope.isotope', this );
+  } else {
+    console.warn( 'jQuery UI widget not available' );
+  }
+};
+
+// Comentário: Método para inicializar o Isotope como um widget jQuery UI.
+Isotope.prototype._initWidget = function() {
+  // Comentário: Chama o método de inicialização do widget, se configurado.
+  if ( this._createWidget ) {
+    this._createWidget();
+    this._init();
+  }
+};
+
+// Comentário: Método para configurar opções padrão específicas de layouts.
+Isotope.prototype._getLayoutModeDefaults = function() {
+  // Comentário: Retorna configurações padrão para o modo de layout atual.
+  var defaults = {};
+  if ( this.layoutMode && this.layoutMode.defaults ) {
+    defaults = this.layoutMode.defaults;
+  }
+  return defaults;
+};
+
+// Comentário: Método para obter o objeto Outlayer, usado como base para layouts.
+Isotope.prototype._getOutlayer = function() {
+  // Comentário: Retorna o objeto Outlayer, garantindo compatibilidade com extensões.
+  return Outlayer;
+};
+
+// Fim da Parte 17
+// Comentário: Método para obter o elemento do container do Isotope.
+Isotope.prototype.getElement = function() {
+  // Comentário: Retorna o elemento DOM associado à instância do Isotope.
+  return this.element;
+};
+
+// Comentário: Método para verificar se o Isotope está inicializado.
+Isotope.prototype.isInit = function() {
+  // Comentário: Retorna true se o Isotope foi inicializado (tem itens e layout configurado).
+  return !!this.items.length;
+};
+
+// Comentário: Método para obter o número de itens no grid.
+Isotope.prototype.getItemCount = function() {
+  // Comentário: Retorna o número total de itens, visíveis ou não.
+  return this.items.length;
+};
+
+// Comentário: Método para obter o número de itens visíveis no grid.
+Isotope.prototype.getFilteredItemCount = function() {
+  // Comentário: Retorna o número de itens que não estão ocultos.
+  return this.filteredItems.length;
+};
+
+// Comentário: Método para registrar um callback para eventos de layout.
+Isotope.prototype.onLayout = function( callback ) {
+  // Comentário: Vincula o callback ao evento 'layoutComplete'.
+  this.on( 'layoutComplete', callback );
+};
+
+// Comentário: Método para executar uma ação após o layout estar completo.
+Isotope.prototype.onceLayout = function( callback ) {
+  // Comentário: Vincula o callback ao evento 'layoutComplete' para ser executado apenas uma vez.
+  var _this = this;
+  this.on( 'layoutComplete', function handler() {
+    callback.apply( _this, arguments );
+    _this.off( 'layoutComplete', handler );
+  });
+};
+
+// Comentário: Método para obter a instância do layout mode atual.
+Isotope.prototype.getLayoutMode = function() {
+  // Comentário: Retorna o objeto do modo de layout atualmente configurado.
+  return this.layoutMode;
+};
+
+// Fim da Parte 18
+// Comentário: Método para registrar dependências externas no Isotope.
+Isotope.prototype._registerDependencies = function() {
+  // Comentário: Registra dependências como Outlayer e jQuery, se disponíveis.
+  this.Outlayer = this._getOutlayer();
+  this.jQuery = jQuery;
+};
+
+// Comentário: Método para verificar a compatibilidade com dependências externas.
+Isotope.prototype._checkDependencies = function() {
+  // Comentário: Garante que o jQuery está disponível, senão exibe um aviso.
+  if ( !this.jQuery ) {
+    console.warn( 'jQuery is required for Isotope' );
+    return false;
+  }
+  return true;
+};
+
+// Comentário: Método para inicializar o Isotope com verificação de dependências.
+Isotope.prototype._initWithDependencies = function() {
+  // Comentário: Verifica dependências antes de inicializar.
+  if ( this._checkDependencies() ) {
+    this._init();
+  }
+};
+
+// Comentário: Define o GUID (identificador único global) inicial para itens.
+Isotope.prototype.itemGUID = 0;
+
+// Comentário: Define a versão do Isotope.
+Isotope.VERSION = '3.0.6';
+
+// Comentário: Registra o Isotope como um plugin global, se não estiver usando módulos.
+if ( !jQuery.fn.isotope ) {
+  jQuery.fn.isotope = jQuery.fn.isotope || {};
+}
+
+// Comentário: Fecha o escopo do Isotope, retornando a classe para uso.
+return Isotope;
+
+}));
+
+// Comentário: Fim do arquivo isotope.pkgd.js. O código restante, se houver, pode incluir extensões ou polyfills.
+
+// Fim da Parte 19
