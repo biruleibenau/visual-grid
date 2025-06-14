@@ -575,6 +575,7 @@
     };
 
     this.options = Object.assign({}, this.defaults, options);
+    this.isArranging = false; // Controle de debouncing
     this._init();
   }
 
@@ -637,6 +638,8 @@
     },
 
     arrange: function(options) {
+      if (this.isArranging) return; // Debouncing
+      this.isArranging = true;
       if (options) {
         this.options = Object.assign({}, this.options, options);
       }
@@ -647,6 +650,9 @@
       this._sort();
       this._hideReveal(filterResult);
       this.layout();
+      setTimeout(() => {
+        this.isArranging = false; // Libera após a animação
+      }, parseFloat(this.options.transitionDuration) * 1000);
     },
 
     _filter: function() {
@@ -681,29 +687,43 @@
       this.hide(filterResult.needHide);
       setTimeout(() => {
         this.reveal(filterResult.needReveal);
-      }, parseFloat(this.options.transitionDuration) * 1000 / 2);
+      }, parseFloat(this.options.transitionDuration) * 1000); // Delay completo
     },
 
     hide: function(items) {
       items.forEach(function(item) {
+        console.log('Hiding item:', item.element); // Debug
+        this._applyTransitions([item]); // Reaplica transição
         Object.assign(item.element.style, this.options.hiddenStyle);
         var onTransitionEnd = () => {
           if (item.isVisible === false) {
             item.element.style.display = 'none';
+            console.log('Hidden:', item.element); // Debug
           }
           item.element.removeEventListener('transitionend', onTransitionEnd);
         };
         item.element.addEventListener('transitionend', onTransitionEnd);
+        // Fallback para garantir display: none se transitionend falhar
+        setTimeout(() => {
+          if (item.isVisible === false && item.element.style.display !== 'none') {
+            item.element.style.display = 'none';
+            console.warn('Fallback hide:', item.element); // Debug
+          }
+        }, parseFloat(this.options.transitionDuration) * 1000 + 50);
       }, this);
     },
 
     reveal: function(items) {
       items.forEach(function(item) {
+        console.log('Revealing item:', item.element); // Debug
+        this._applyTransitions([item]); // Reaplica transição
         Object.assign(item.element.style, this.options.hiddenStyle);
         item.element.style.display = '';
-        requestAnimationFrame(() => {
+        // Delay pequeno para garantir renderização
+        setTimeout(() => {
           Object.assign(item.element.style, this.options.visibleStyle);
-        });
+          console.log('Applied visibleStyle:', item.element); // Debug
+        }, 10);
       }, this);
     },
 
