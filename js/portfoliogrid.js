@@ -570,12 +570,12 @@
       sortBy: 'original-order',
       sortAscending: true,
       getSortData: null,
-      hiddenStyle: { opacity: 0, transform: 'scale(0.5)' },
+      hiddenStyle: { opacity: 0, transform: 'scale(0.5)' }, // Mantém scale(0.5)
       visibleStyle: { opacity: 1, transform: 'scale(1)' }
     };
 
     this.options = Object.assign({}, this.defaults, options);
-    this.isArranging = false; // Controle de debouncing
+    this.isArranging = false;
     this._init();
   }
 
@@ -599,6 +599,12 @@
     _applyTransitions: function(items) {
       items.forEach(function(item) {
         item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
+      }, this);
+    },
+
+    _applyAnimationTransitions: function(items) {
+      items.forEach(function(item) {
+        item.element.style.transition = `opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
       }, this);
     },
 
@@ -638,7 +644,7 @@
     },
 
     arrange: function(options) {
-      if (this.isArranging) return; // Debouncing
+      if (this.isArranging) return;
       this.isArranging = true;
       if (options) {
         this.options = Object.assign({}, this.options, options);
@@ -651,7 +657,7 @@
       this._hideReveal(filterResult);
       this.layout();
       setTimeout(() => {
-        this.isArranging = false; // Libera após a animação
+        this.isArranging = false;
       }, parseFloat(this.options.transitionDuration) * 1000);
     },
 
@@ -672,58 +678,39 @@
     },
 
     _getFilterTest: function(filter) {
-      if (filter === '*') {
-        return function() { return true; };
-      }
-      if (typeof filter === 'function') {
-        return filter;
-      }
-      return function(element) {
-        return element.matches(filter);
-      };
+      if (filter === '*') return function() { return true; };
+      if (typeof filter === 'function') return filter;
+      return function(element) { return element.matches(filter); };
     },
 
     _hideReveal: function(filterResult) {
       this.hide(filterResult.needHide);
-      setTimeout(() => {
-        this.reveal(filterResult.needReveal);
-      }, parseFloat(this.options.transitionDuration) * 1000); // Delay completo
+      setTimeout(() => this.reveal(filterResult.needReveal), parseFloat(this.options.transitionDuration) * 2 * 1000 / 2); // 0.2s
     },
 
-    hide: function(items) {
+    hide: function(filterResult) {
       items.forEach(function(item) {
-        console.log('Hiding item:', item.element); // Debug
-        this._applyTransitions([item]); // Reaplica transição
-        Object.assign(item.element.style, this.options.hiddenStyle);
+        this._applyAnimationTransitions([item]);
+        Object.assign(item.element, filterResult.hiddenStyle);
         var onTransitionEnd = () => {
-          if (item.isVisible === false) {
+          if (!item.isVisible) {
             item.element.style.display = 'none';
-            console.log('Hidden:', item.element); // Debug
           }
           item.element.removeEventListener('transitionend', onTransitionEnd);
         };
         item.element.addEventListener('transitionend', onTransitionEnd);
-        // Fallback para garantir display: none se transitionend falhar
-        setTimeout(() => {
-          if (item.isVisible === false && item.element.style.display !== 'none') {
-            item.element.style.display = 'none';
-            console.warn('Fallback hide:', item.element); // Debug
-          }
-        }, parseFloat(this.options.transitionDuration) * 1000 + 50);
       }, this);
     },
 
     reveal: function(items) {
       items.forEach(function(item) {
-        console.log('Revealing item:', item.element); // Debug
-        this._applyTransitions([item]); // Reaplica transição
-        Object.assign(item.element.style, this.options.hiddenStyle);
+        this._applyAnimationTransitions([item]);
         item.element.style.display = '';
-        // Delay pequeno para garantir renderização
-        setTimeout(() => {
-          Object.assign(item.element.style, this.options.visibleStyle);
-          console.log('Applied visibleStyle:', item.element); // Debug
-        }, 10);
+        // Força reflow
+        item.element.offsetWidth;
+        Object.assign(item.element.hiddenStyle, this.options);
+        // Aplica visibleStyle
+        Object.assign(item.element.style, this.options.visibleStyle);
       }, this);
     },
 
@@ -737,12 +724,10 @@
         this.options.sortBy = 'original-order';
       }
       this.items.sort(function(a, b) {
-        var keys = Array.isArray(sortBy) ? sortBy : [sortBy];
-        for (var i = 0; i < keys.length; i++) {
-          var key = keys[i];
+        for (var key of (Array.isArray(sortBy) ? sortBy : [sortBy])) {
           var valueA = a.sortData[key];
           var valueB = b.sortData[key];
-          if (valueA === undefined || valueB === undefined) return 0;
+          if (valueA === undefined || valueB === undefined) continue;
           if (valueA > valueB) return sortAscending ? 1 : -1;
           if (valueA < valueB) return sortAscending ? -1 : 1;
         }
@@ -763,10 +748,7 @@
         } else if (typeof sorter === 'function') {
           sorters[key] = function(elem) {
             try {
-              if (sorter.length === 0) {
-                return sorter();
-              }
-              return sorter(elem.element);
+              return sorter.length === 0 ? sorter() : sorter(elem.element);
             } catch (e) {
               console.error(`Erro ao executar sorter "${key}":`, e);
               return '';
@@ -799,7 +781,7 @@
         return {
           element: elem,
           isVisible: true,
-          sortData: { 'original-order': this.items.length + index }
+          sortData: { 'original-order': index + this.items.length }
         };
       }, this).filter(item => item);
       this._applyTransitions(newItems);
@@ -878,7 +860,7 @@
       this.items.forEach(function(item) {
         if (item.isVisible) {
           var position = this._getItemLayoutPosition(item);
-          this._positionItem(item, position.x, position.y);
+          this._positionItem(item, position, position.x, position.y);
         }
       }, this);
     },
@@ -929,21 +911,20 @@
       this.maxY = Math.max(this.maxY, y + itemHeight + this.options.gutter);
 
       if (this.options.percentPosition) {
-        x = (x / Math.max(this.size.innerWidth, 1)) * 100 + '%';
-        y = (y / Math.max(this.size.innerHeight, 1)) * 100 + '%';
+        x = (x / Math.max(this.size.innerWidth, 100)) * 100 + '%';
+        y = (y / Math.max(this.size.innerHeight, 100)) * 100 + '%';
       } else {
         x += 'px';
         y += 'px';
       }
-
-      return { x: x, y: y };
+      return { x, y };
     },
 
     _getTopColGroup: function(colSpan) {
       if (colSpan === 1) return this.colYs;
       var group = [];
       for (var i = 0; i <= this.cols - colSpan; i++) {
-        group.push(Math.max.apply(Math, this.colYs.slice(i, i + colSpan)));
+        group.push(Math.max(...this.colYs.slice(i, i + colSpan)));
       }
       return group;
     },
