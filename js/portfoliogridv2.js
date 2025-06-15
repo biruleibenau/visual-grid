@@ -397,6 +397,17 @@ Isotope.LayoutMode.modes.vertical.prototype._layoutItems = function( items ) {
   }
 };
 
+// Comentário: Define o objeto Item, usado para representar cada elemento do grid.
+Isotope.Item = function( elem, isotope ) {
+  // Comentário: Inicializa o item com o elemento DOM e a instância do Isotope.
+  this.element = elem;
+  this.isotope = isotope;
+  this.isHidden = false;
+  // Comentário: Calcula o tamanho inicial do item.
+  this.getSize();
+  this.getPosition();
+};
+
 // Comentário: Método para aplicar a posição de um item no DOM com transições, se habilitadas.
 Isotope.Item.prototype.layout = function() {
   // Comentário: Aplica estilos CSS para posicionar o item.
@@ -919,16 +930,7 @@ return Isotope;
 
 // Comentário: Fim do código principal do Isotope. As próximas seções podem incluir extensões ou dependências.
 
-// Comentário: Define o objeto Item, usado para representar cada elemento do grid.
-Isotope.Item = function( elem, isotope ) {
-  // Comentário: Inicializa o item com o elemento DOM e a instância do Isotope.
-  this.element = elem;
-  this.isotope = isotope;
-  this.isHidden = false;
-  // Comentário: Calcula o tamanho inicial do item.
-  this.getSize();
-  this.getPosition();
-};
+
 
 // Fim da Parte 12
 // Comentário: Estende o protótipo do Item com métodos do Outlayer.Item, se disponível.
