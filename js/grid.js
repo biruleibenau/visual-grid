@@ -1,50 +1,131 @@
 /*!
- * Isotope v3.0.6 - Versão Simplificada
- * Inclui apenas os modos masonry e fitRows
+ * Isotope v3.0.6 - Código Unificado Completo
+ * Inclui masonry, fitRows, get-size, desandro-matches-selector, fizzy-ui-utils
+ * Suporta jQuery para filtragem
  * Licenciado sob GPLv3 para uso open source ou Licença Comercial
  * https://isotope.metafizzy.co
  * Copyright 2010-2018 Metafizzy
- * Reformatado e unificado para uso essencial
  */
 
 ( function( window, factory ) {
   // Módulo universal (UMD) para suportar AMD, CommonJS e navegador
   if ( typeof define === 'function' && define.amd ) {
-    // AMD (ex: RequireJS)
-    define( [
-      'get-size/get-size',
-      'desandro-matches-selector/matches-selector',
-      'fizzy-ui-utils/utils'
-    ], function( getSize, matchesSelector, utils ) {
-      return factory( window, getSize, matchesSelector, utils );
-    });
+    define( factory );
   } else if ( typeof module === 'object' && module.exports ) {
-    // CommonJS (ex: Node.js, Webpack)
-    module.exports = factory(
-      window,
-      require('get-size'),
-      require('desandro-matches-selector'),
-      require('fizzy-ui-utils')
-    );
+    module.exports = factory();
   } else {
-    // Navegador global
-    window.Isotope = factory(
-      window,
-      window.getSize,
-      window.matchesSelector,
-      window.fizzyUIUtils
-    );
+    window.Isotope = factory();
   }
-
-}( window, function factory( window, getSize, matchesSelector, utils ) {
+}( window, function factory() {
 'use strict';
 
-// -------------------------- Utilitários -------------------------- //
+// -------------------------- get-size -------------------------- //
 
-// Função para remover espaços em branco (substitui trim nativo)
-var trim = String.prototype.trim ?
-  function( str ) { return str.trim(); } :
-  function( str ) { return str.replace( /^\s+|\s+$/g, '' ); };
+// Módulo para medir dimensões de elementos
+var getSize = ( function() {
+  function getStyleSize( value ) {
+    var num = parseFloat( value );
+    return isNaN( num ) ? 0 : num;
+  }
+
+  function getZeroSize() {
+    return { width: 0, height: 0, innerWidth: 0, innerHeight: 0, outerWidth: 0, outerHeight: 0 };
+  }
+
+  function getStyle( elem ) {
+    return window.getComputedStyle ? getComputedStyle( elem ) : elem.currentStyle;
+  }
+
+  function getSize( elem ) {
+    var style = getStyle( elem );
+    if ( !style ) return getZeroSize();
+
+    var size = {
+      width: getStyleSize( style.width ),
+      height: getStyleSize( style.height ),
+      marginLeft: getStyleSize( style.marginLeft ),
+      marginRight: getStyleSize( style.marginRight ),
+      marginTop: getStyleSize( style.marginTop ),
+      marginBottom: getStyleSize( style.marginBottom ),
+      paddingLeft: getStyleSize( style.paddingLeft ),
+      paddingRight: getStyleSize( style.paddingRight ),
+      paddingTop: getStyleSize( style.paddingTop ),
+      paddingBottom: getStyleSize( style.paddingBottom )
+    };
+
+    size.innerWidth = size.width - size.paddingLeft - size.paddingRight;
+    size.innerHeight = size.height - size.paddingTop - size.paddingBottom;
+    size.outerWidth = size.width + size.marginLeft + size.marginRight;
+    size.outerHeight = size.height + size.marginTop + size.marginBottom;
+
+    return size;
+  }
+
+  return getSize;
+})();
+
+// -------------------------- desandro-matches-selector -------------------------- //
+
+// Módulo para suportar seletores CSS
+var matchesSelector = ( function() {
+  var matchesMethod = ( function() {
+    var ElemProto = Element.prototype;
+    if ( ElemProto.matches ) return 'matches';
+    if ( ElemProto.webkitMatchesSelector ) return 'webkitMatchesSelector';
+    if ( ElemProto.mozMatchesSelector ) return 'mozMatchesSelector';
+    if ( ElemProto.msMatchesSelector ) return 'msMatchesSelector';
+    if ( ElemProto.oMatchesSelector ) return 'oMatchesSelector';
+  })();
+
+  if ( matchesMethod ) {
+    return function( elem, selector ) {
+      return elem[ matchesMethod ]( selector );
+    };
+  }
+
+  return function( elem, selector ) {
+    var nodes = elem.parentNode.querySelectorAll( selector );
+    for ( var i=0; i < nodes.length; i++ ) {
+      if ( nodes[i] === elem ) return true;
+    }
+    return false;
+  };
+})();
+
+// -------------------------- fizzy-ui-utils -------------------------- //
+
+// Módulo de utilitários
+var utils = ( function() {
+  var utils = {};
+
+  utils.extend = function( a, b ) {
+    for ( var prop in b ) {
+      if ( b.hasOwnProperty( prop ) ) {
+        a[ prop ] = b[ prop ];
+      }
+    }
+    return a;
+  };
+
+  utils.makeArray = function( obj ) {
+    if ( Array.isArray( obj ) ) return obj;
+    if ( obj == null ) return [];
+    var arr = [];
+    if ( typeof obj.length === 'number' ) {
+      for ( var i=0; i < obj.length; i++ ) arr.push( obj[i] );
+    } else {
+      arr.push( obj );
+    }
+    return arr;
+  };
+
+  utils.removeFrom = function( arr, item ) {
+    var index = arr.indexOf( item );
+    if ( index !== -1 ) arr.splice( index, 1 );
+  };
+
+  return utils;
+})();
 
 // -------------------------- Outlayer -------------------------- //
 
@@ -166,7 +247,6 @@ proto.once = function( type, listener ) {
   this.element.addEventListener( type, handler );
 };
 
-// Cria uma nova classe Outlayer
 Outlayer.create = function( namespace, options ) {
   function Class() {
     Outlayer.apply( this, arguments );
@@ -273,9 +353,7 @@ proto._getTopColPosition = function( colSpan ) {
 };
 
 proto._getTopColGroup = function( colSpan ) {
-  if ( colSpan < 2 ) {
-    return this.colYs;
-  }
+  if ( colSpan < 2 ) return this.colYs;
   var colGroup = [];
   var groupCount = this.cols + 1 - colSpan;
   for ( var i = 0; i < groupCount; i++ ) {
@@ -285,9 +363,7 @@ proto._getTopColGroup = function( colSpan ) {
 };
 
 proto._getColGroupY = function( col, colSpan ) {
-  if ( colSpan < 2 ) {
-    return this.colYs[ col ];
-  }
+  if ( colSpan < 2 ) return this.colYs[ col ];
   var groupColYs = this.colYs.slice( col, col + colSpan );
   return Math.max.apply( Math, groupColYs );
 };
@@ -475,9 +551,14 @@ Item.prototype.updateSortData = function() {
 
 // -------------------------- Isotope -------------------------- //
 
+var trim = String.prototype.trim ?
+  function( str ) { return str.trim(); } :
+  function( str ) { return str.replace( /^\s+|\s+$/g, '' ); };
+
 var Isotope = Outlayer.create( 'isotope', {
   layoutMode: 'masonry',
-  sortAscending: true
+  sortAscending: true,
+  isJQueryFiltering: true
 });
 
 Isotope.Item = Item;
@@ -609,8 +690,15 @@ proto._filter = function( items ) {
 };
 
 proto._getFilterTest = function( filter ) {
+  if ( window.jQuery && this._getOption('isJQueryFiltering') ) {
+    return function( item ) {
+      return jQuery( item.element ).is( filter );
+    };
+  }
   if ( typeof filter === 'function' ) {
-    return function( item ) { return filter( item.element ); };
+    return function( item ) {
+      return filter( item.element );
+    };
   }
   return function( item ) {
     return matchesSelector( item.element, filter );
