@@ -916,7 +916,7 @@ return utils;
     );
   }
 
-})( window, function factory( EvEmitter, getSize ) {
+}( window, function factory( EvEmitter, getSize ) {
 'use strict';
 
 // ----- helpers ----- //
@@ -1494,7 +1494,7 @@ proto.destroy = function() {
 // Retorna a classe Item para uso como módulo
 return Item;
 
-}));
+})); //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*!
  * Outlayer v2.1.1
@@ -2032,7 +2032,7 @@ proto.dispatchEvent = function( type, event, args ) {
 
 // Nota: O código foi cortado antes da definição de métodos relacionados a stamps e ignore
 
-});
+}); ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * keep item in collection, but do not lay it out
@@ -3805,4 +3805,5 @@ var trim = String.prototype.trim ?
   return Isotope;
 
 }));
+
 
