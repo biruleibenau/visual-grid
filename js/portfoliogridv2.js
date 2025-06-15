@@ -66,6 +66,17 @@ function Isotope( element, options ) {
   this.initLayout();
 }
 
+// Comentário: Define o objeto Item, usado para representar cada elemento do grid.
+Isotope.Item = function( elem, isotope ) {
+  // Comentário: Inicializa o item com o elemento DOM e a instância do Isotope.
+  this.element = elem;
+  this.isotope = isotope;
+  this.isHidden = false;
+  // Comentário: Calcula o tamanho inicial do item.
+  this.getSize();
+  this.getPosition();
+};
+
 // Comentário: Define as opções padrão do Isotope.
 Isotope.defaults = {
   itemSelector: '.item', // Seletor CSS para os itens do grid
@@ -395,17 +406,6 @@ Isotope.LayoutMode.modes.vertical.prototype._layoutItems = function( items ) {
     this.y += item.size.outerHeight + this.isotope.gutter;
     item.layout();
   }
-};
-
-// Comentário: Define o objeto Item, usado para representar cada elemento do grid.
-Isotope.Item = function( elem, isotope ) {
-  // Comentário: Inicializa o item com o elemento DOM e a instância do Isotope.
-  this.element = elem;
-  this.isotope = isotope;
-  this.isHidden = false;
-  // Comentário: Calcula o tamanho inicial do item.
-  this.getSize();
-  this.getPosition();
 };
 
 // Comentário: Método para aplicar a posição de um item no DOM com transições, se habilitadas.
