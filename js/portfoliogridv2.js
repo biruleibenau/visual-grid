@@ -915,7 +915,7 @@ Isotope.data = function( elem ) {
 return Isotope;
 
 // Comentário: Fecha a função factory e a IIFE (Immediately Invoked Function Expression).
-}));
+
 
 // Comentário: Fim do código principal do Isotope. As próximas seções podem incluir extensões ou dependências.
 
