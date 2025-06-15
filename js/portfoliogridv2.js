@@ -1013,7 +1013,8 @@ proto.handleEvent = function( event ) {
 // Método que obtém as dimensões do elemento usando a biblioteca getSize
 proto.getSize = function() {
   this.size = getSize( this.element ); // Armazena o resultado em this.size
-};
+  console.log('aqui o erro');
+}; 
 
 
 /**
@@ -3804,3 +3805,4 @@ var trim = String.prototype.trim ?
   return Isotope;
 
 }));
+
