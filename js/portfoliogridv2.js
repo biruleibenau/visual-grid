@@ -52,29 +52,36 @@ Outlayer.Item = Outlayer.Item || {};
 
 // Comentário: Inicializa o objeto Isotope com suas propriedades e métodos principais.
 function Isotope( element, options ) {
-  // Comentário: Garante que o Isotope seja instanciado com a palavra-chave 'new'.
+  console.log('Seletor:', element);
   if ( !( this instanceof Isotope ) ) {
     return new Isotope( element, options );
   }
-  // Comentário: Armazena o elemento DOM onde o Isotope será aplicado.
   this.element = element;
-  // Comentário: Mescla opções padrão com as fornecidas pelo usuário.
+  console.log('Elemento:', this.element);
   this.options = jQuery.extend( {}, this.constructor.defaults );
   this.option( options );
-  // Comentário: Inicializa o layout e os itens.
+  console.log('Antes de getItems');
   this.getItems();
+  console.log('Depois de getItems, this.items:', this.items);
   this.initLayout();
 }
 
 // Comentário: Define o objeto Item, usado para representar cada elemento do grid.
 Isotope.Item = function( elem, isotope ) {
-  // Comentário: Inicializa o item com o elemento DOM e a instância do Isotope.
+  console.log('Criando Isotope.Item para elemento:', elem);
   this.element = elem;
   this.isotope = isotope;
   this.isHidden = false;
-  // Comentário: Calcula o tamanho inicial do item.
-  this.getSize();
-  this.getPosition();
+  try {
+    this.getSize();
+  } catch (e) {
+    console.error('Erro em getSize:', e);
+  }
+  try {
+    this.getPosition();
+  } catch (e) {
+    console.error('Erro em getPosition:', e);
+  }
 };
 
 // Comentário: Define as opções padrão do Isotope.
@@ -96,13 +103,21 @@ Isotope.prototype.option = function( opts ) {
   }
 };
 
-// Comentário: Método para obter os itens do grid com base no seletor definido.
 Isotope.prototype.getItems = function() {
+  console.log('Iniciando getItems, Isotope.Item:', Isotope.Item);
+  console.log('Elemento:', this.element);
+  console.log('itemSelector:', this.options.itemSelector);
   this.items = [];
   var itemElems = this.element.querySelectorAll( this.options.itemSelector );
+  console.log('Itens encontrados:', itemElems);
   for ( var i=0; i < itemElems.length; i++ ) {
-    this.items.push( new Isotope.Item( itemElems[i], this ) );
+    try {
+      this.items.push( new Isotope.Item( itemElems[i], this ) );
+    } catch (e) {
+      console.error('Erro ao criar Isotope.Item:', e);
+    }
   }
+  console.log('this.items:', this.items);
 };
 
 // Fim da Parte 1
