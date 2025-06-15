@@ -1015,7 +1015,6 @@ proto.getSize = function() {
   this.size = getSize( this.element ); // Armazena o resultado em this.size
 };
 
-});
 
 /**
  * apply CSS styles to element
@@ -3805,5 +3804,3 @@ var trim = String.prototype.trim ?
   return Isotope;
 
 }));
-
-
