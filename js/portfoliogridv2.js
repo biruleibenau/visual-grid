@@ -56,7 +56,7 @@ function Isotope( element, options ) {
   if ( !( this instanceof Isotope ) ) {
     return new Isotope( element, options );
   }
-  this.element = element;
+  this.element = typeof element == 'string' ? document.querySelector( element ) : element;
   console.log('Elemento:', this.element);
   this.options = jQuery.extend( {}, this.constructor.defaults );
   this.option( options );
@@ -108,6 +108,10 @@ Isotope.prototype.getItems = function() {
   console.log('Elemento:', this.element);
   console.log('itemSelector:', this.options.itemSelector);
   this.items = [];
+  if (!this.element) {
+    console.warn('Elemento não encontrado, retornando itens vazios');
+    return;
+  }
   var itemElems = this.element.querySelectorAll( this.options.itemSelector );
   console.log('Itens encontrados:', itemElems);
   for ( var i=0; i < itemElems.length; i++ ) {
