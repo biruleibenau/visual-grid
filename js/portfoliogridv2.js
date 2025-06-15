@@ -2031,8 +2031,7 @@ proto.dispatchEvent = function( type, event, args ) {
 // -------------------------- ignore & stamps -------------------------- //
 
 // Nota: O código foi cortado antes da definição de métodos relacionados a stamps e ignore
-
-}); ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * keep item in collection, but do not lay it out
@@ -3805,4 +3804,5 @@ var trim = String.prototype.trim ?
   return Isotope;
 
 }));
+
 
