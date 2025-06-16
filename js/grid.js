@@ -969,3 +969,4 @@
 
   return Isotope;
 }));
+console.log('grid.js carregado completamente');
