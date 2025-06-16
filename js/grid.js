@@ -48,6 +48,7 @@
    * Funções utilitárias (fizzy-ui-utils)
    */
   const utils = {
+	  console.log('entrou aqui 1');
     extend( a, b ) {
       for ( let prop in b ) {
         if ( b.hasOwnProperty( prop ) ) {
@@ -78,6 +79,7 @@
    * Mede tamanhos e margens de elementos (get-size)
    */
   const getSize = ( function() {
+	  console.log('entrou aqui 2');
     function getStyleSize( value ) {
       let num = parseFloat( value );
       return isNaN( num ) ? 0 : num;
@@ -117,6 +119,7 @@
    * Verifica se um elemento corresponde a um seletor CSS (matches-selector)
    */
   const matchesSelector = ( function() {
+	  console.log('entrou aquui 3');
     let matchesMethod = ( function() {
       let ElemProto = Element.prototype;
       if ( ElemProto.matches ) return 'matches';
@@ -144,6 +147,7 @@
    * Classe base para layouts (Outlayer)
    */
   function Outlayer( element, options ) {
+	  console.log('entrou qui 4');
     // Valida o elemento
     this.element = typeof element === 'string' ? document.querySelector( element ) : element;
     if ( !this.element || !( this.element instanceof HTMLElement ) ) {
@@ -355,6 +359,7 @@
    * Classe base para modos de layout
    */
   function LayoutMode( isotope ) {
+	  console.log('entrou aqui 5');
     this.isotope = isotope;
     if ( isotope ) {
       this.options = utils.extend( {}, this.constructor.options );
