@@ -109,7 +109,12 @@ var utils = ( function() {
 
 // -------------------------- Outlayer -------------------------- //
 function Outlayer( element, options ) {
-  this.element = element;
+  // Valida o elemento na inicialização
+  this.element = typeof element === 'string' ? document.querySelector(element) : element;
+  if (!this.element || !(this.element instanceof HTMLElement)) {
+    console.error('Isotope: Elemento inválido fornecido:', element);
+    this.element = document.createElement('div'); // Fallback para evitar erros
+  }
   this.options = utils.extend( {}, this.constructor.defaults );
   this.option( options );
   this.items = [];
@@ -118,6 +123,22 @@ Outlayer.defaults = { transitionDuration: 0.4 };
 var proto = Outlayer.prototype;
 proto.option = function( opts ) { utils.extend( this.options, opts ); };
 proto._getOption = function( option ) { return this.options[ option ]; }; // Definido explicitamente
+proto.once = function( type, listener ) {
+  var _this = this;
+  function handler() {
+    if (_this.element && _this.element.removeEventListener) {
+      _this.element.removeEventListener( type, handler );
+    }
+    listener.apply( this, arguments );
+  }
+  // Verifica se this.element suporta addEventListener
+  if (this.element && this.element.addEventListener) {
+    this.element.addEventListener( type, handler ); // Linha 204 corrigida
+  } else {
+    console.warn('Isotope: Não foi possível adicionar ouvinte de evento. Elemento inválido:', this.element);
+    listener.apply( this ); // Chama o listener diretamente como fallback
+  }
+};
 proto._create = function() {
   this._getItems();
   this.layoutItems( this.items );
