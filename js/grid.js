@@ -8,17 +8,40 @@
  * Reformatado e corrigido para CodePen, 15 de junho de 2025
  */
 // No início de grid.js
-console.log('Iniciando carregamento de grid.js');
 ( function( window, factory ) {
-  // UMD: Suporta AMD, CommonJS e browser global
-  if ( typeof define === 'function' && define.amd ) {
-    define( factory );
-  } else if ( typeof module === 'object' && module.exports ) {
-    module.exports = factory();
-  } else {
-    window.Isotope = factory();
+  console.log('Iniciando UMD wrapper'); // Log para depurar
+  try {
+    if ( typeof define === 'function' && define.amd ) {
+      console.log('Definindo Isotope para AMD');
+      define( factory );
+    } else if ( typeof module === 'object' && module.exports ) {
+      console.log('Definindo Isotope para CommonJS');
+      module.exports = factory();
+    } else {
+      console.log('Definindo Isotope para navegador');
+      window.Isotope = factory();
+      // Integração com jQuery
+      if ( window.jQuery ) {
+        console.log('jQuery detectado, registrando plugin Isotope');
+        jQuery.fn.isotope = function( options, callback ) {
+          return this.each( function() {
+            var instance = new window.Isotope( this, options );
+            if ( typeof callback === 'function' ) {
+              instance.once( 'arrangeComplete', callback );
+            }
+          });
+        };
+        console.log('Plugin jQuery do Isotope registrado');
+      } else {
+        console.log('jQuery não detectado, pulando integração');
+      }
+      console.log('Isotope atribuído a window.Isotope');
+    }
+  } catch ( error ) {
+    console.error('Erro ao executar UMD wrapper:', error);
   }
 }( window, function factory() {
+  console.log('Iniciando factory do Isotope');
   'use strict';
 
   // -------------------------- Utils -------------------------- //
