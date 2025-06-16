@@ -729,42 +729,56 @@ proto._getContainerSize = function() {
     });
   };
 
-  proto._filter = function( items ) {
-    let filter = this.options.filter || '*';
-    let matches = [];
-    let hiddenMatched = [];
-    let visibleUnmatched = [];
-    let test = this._getFilterTest( filter );
-    for ( let i = 0; i < items.length; i++ ) {
-      let item = items[i];
-      if ( item.isIgnored ) continue;
-      let isMatched = test( item );
-      if ( isMatched ) matches.push( item );
-      if ( isMatched && item.isHidden ) hiddenMatched.push( item );
-      else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
-    }
-    return {
-      matches: matches,
-      needReveal: hiddenMatched,
-      needHide: visibleUnmatched
-    };
+ proto._filter = function( items ) {
+  let filter = this.options.filter || '*';
+  let matches = [];
+  let hiddenMatched = [];
+  let visibleUnmatched = [];
+  let test = this._getFilterTest( filter );
+  console.log('Filtrando com:', filter); // Novo log
+  for ( let i = 0; i < items.length; i++ ) {
+    let item = items[i];
+    if ( item.isIgnored ) continue;
+    let isMatched = test( item );
+    console.log('Item:', item.element.className, 'isMatched:', isMatched); // Novo log
+    if ( isMatched ) matches.push( item );
+    if ( isMatched && item.isHidden ) hiddenMatched.push( item );
+    else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
+  }
+  console.log('Resultado do filtro:', {
+    matches: matches.length,
+    needReveal: hiddenMatched.length,
+    needHide: visibleUnmatched.length
+  }); // Novo log
+  return {
+    matches: matches,
+    needReveal: hiddenMatched,
+    needHide: visibleUnmatched
   };
-
-  proto._getFilterTest = function( filter ) {
-    if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
-      return function( item ) {
-        return jQuery( item.element ).is( filter );
-      };
-    }
-    if ( typeof filter === 'function' ) {
-      return function( item ) {
-        return filter( item.element );
-      };
-    }
+};
+proto._getFilterTest = function( filter ) {
+  console.log('Criando teste de filtro para:', filter); // Novo log
+  if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
+    console.log('Usando jQuery para filtro'); // Novo log
     return function( item ) {
-      return matchesSelector( item.element, filter );
+      let result = jQuery( item.element ).is( filter );
+      console.log('jQuery.is(', filter, ') para', item.element.className, ':', result); // Novo log
+      return result;
     };
+  }
+  if ( typeof filter === 'function' ) {
+    console.log('Usando função personalizada para filtro');
+    return function( item ) {
+      return filter( item.element );
+    };
+  }
+  console.log('Usando matchesSelector para filtro');
+  return function( item ) {
+    let result = matchesSelector( item.element, filter );
+    console.log('matchesSelector(', filter, ') para', item.element.className, ':', result); // Novo log
+    return result;
   };
+};
 
   proto.updateSortData = function( elems ) {
     let items = elems ? this.getItems( utils.makeArray( elems ) ) : this.items;
