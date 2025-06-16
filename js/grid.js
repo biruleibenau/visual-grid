@@ -662,15 +662,6 @@ proto._getContainerSize = function() {
   }
 };
   
-  let initialOpts = this.options[ name ] || {};
-  this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
-  try {
-    this.modes[ name ] = new Mode( this );
-    console.log('Modo registrado:', name, !!this.modes[ name ]);
-  } catch (error) {
-    console.error('Erro ao criar instância do modo:', name, error);
-  }
-  
   proto.layout = function() {
     if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
       this.arrange();
