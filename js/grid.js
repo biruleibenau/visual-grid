@@ -9,7 +9,7 @@
  */
 // No início de grid.js
 ( function( window, factory ) {
-  console.log('Iniciando UMD wrapper'); // Log para depurar
+  console.log('Iniciando UMD wrapper');
   try {
     if ( typeof define === 'function' && define.amd ) {
       console.log('Definindo Isotope para AMD');
@@ -20,7 +20,6 @@
     } else {
       console.log('Definindo Isotope para navegador');
       window.Isotope = factory();
-      // Integração com jQuery
       if ( window.jQuery ) {
         console.log('jQuery detectado, registrando plugin Isotope');
         jQuery.fn.isotope = function( options, callback ) {
@@ -73,13 +72,7 @@
       if ( index !== -1 ) arr.splice( index, 1 );
     }
   };
-  console.log('Dependências iniciais:', {
-  utils: !!utils,
-  getSize: !!getSize,
-  matchesSelector: !!matchesSelector,
-  Outlayer: !!Outlayer
-});
-
+  
   // -------------------------- Get Size -------------------------- //
   /**
    * Mede tamanhos e margens de elementos (get-size)
@@ -349,6 +342,13 @@
   proto.hide = function() {
     this.element.style.display = 'none';
   };
+
+  console.log('Dependências iniciais:', {
+  utils: !!utils,
+  getSize: !!getSize,
+  matchesSelector: !!matchesSelector,
+  Outlayer: !!Outlayer
+});
 
   // -------------------------- Layout Mode -------------------------- //
   /**
