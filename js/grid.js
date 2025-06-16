@@ -736,6 +736,14 @@ proto._getContainerSize = function() {
   let visibleUnmatched = [];
   let test = this._getFilterTest( filter );
   console.log('Filtrando com:', filter); // Novo log
+  console.log('entrou aqui:', filterValue);
+      try {
+        $grid.isotope({ filter: filterValue });
+        console.log('Filtro aplicado com sucesso log no grid.js:', filterValue);
+        console.log('Itens visíveis:', $grid.find('.grid-item:not(.isotope-hidden)').length, $grid.find('.grid-item:not(.isotope-hidden)').map((i, el) => el.className).get());
+      } catch (error) {
+        console.error('Erro ao aplicar filtro:', error);
+      }
   for ( let i = 0; i < items.length; i++ ) {
     let item = items[i];
     if ( item.isIgnored ) continue;
