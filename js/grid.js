@@ -391,7 +391,7 @@
     return Mode;
   };
 
-  // -------------------------- Masonry Mode -------------------------- //
+// -------------------------- Masonry Mode -------------------------- //
 /**
  * Modo de layout Masonry
  */
@@ -525,6 +525,13 @@ MasonryMode.prototype.needsResizeLayout = function() {
   return previousWidth !== this.containerWidth;
 };
 
+MasonryMode.prototype._getOption = function( option ) {
+  if ( option === 'fitWidth' ) {
+    return this.options.isFitWidth !== undefined ? this.options.isFitWidth : this.options.fitWidth;
+  }
+  return this.isotope._getOption( option );
+};
+
   // -------------------------- Masonry Mode -------------------------- //
   /**
    * Modo de layout Masonry (adaptado para Isotope)
@@ -633,19 +640,25 @@ MasonryMode.prototype.needsResizeLayout = function() {
   proto = Isotope.prototype;
 
   proto._create = function() {
-    this.itemGUID = 0;
-    this._sorters = {};
-    this._getSorters();
-    Outlayer.prototype._create.call( this );
-    this.modes = {};
-    this.filteredItems = this.items;
-    this.sortHistory = [ 'original-order' ];
-    // Inicializa todos os modos de layout
-    for ( let name in LayoutMode.modes ) {
-	  console.log('Registrando modo:', name); // Adicione isso
+  console.log('Iniciando _create');
+  this.itemGUID = 0;
+  this._sorters = {};
+  this._getSorters();
+  Outlayer.prototype._create.call( this );
+  this.modes = {};
+  this.filteredItems = this.items;
+  this.sortHistory = [ 'original-order' ];
+  console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
+  for ( let name in LayoutMode.modes ) {
+    console.log('Registrando modo:', name);
+    try {
       this._initLayoutMode( name );
+    } catch (error) {
+      console.error('Erro ao inicializar modo:', name, error);
     }
-  };
+  }
+  console.log('Modos registrados:', Object.keys(this.modes));
+};
 
   proto.reloadItems = function() {
     this.itemGUID = 0;
@@ -663,11 +676,21 @@ MasonryMode.prototype.needsResizeLayout = function() {
   };
 
   proto._initLayoutMode = function( name ) {
-    let Mode = LayoutMode.modes[ name ];
-    let initialOpts = this.options[ name ] || {};
-    this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
+  console.log('Inicializando modo:', name);
+  let Mode = LayoutMode.modes[ name ];
+  if (!Mode) {
+    console.error('Modo não encontrado:', name);
+    return;
+  }
+  let initialOpts = this.options[ name ] || {};
+  this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
+  try {
     this.modes[ name ] = new Mode( this );
-  };
+    console.log('Modo registrado:', name, !!this.modes[ name ]);
+  } catch (error) {
+    console.error('Erro ao criar instância do modo:', name, error);
+  }
+};
 
   proto.layout = function() {
     if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
