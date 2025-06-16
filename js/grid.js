@@ -108,12 +108,12 @@ var utils = ( function() {
 })();
 
 // -------------------------- Outlayer -------------------------- //
+// -------------------------- Outlayer -------------------------- //
 function Outlayer( element, options ) {
-  // Valida o elemento na inicialização
   this.element = typeof element === 'string' ? document.querySelector(element) : element;
   if (!this.element || !(this.element instanceof HTMLElement)) {
     console.error('Isotope: Elemento inválido fornecido:', element);
-    this.element = document.createElement('div'); // Fallback para evitar erros
+    this.element = document.createElement('div');
   }
   this.options = utils.extend( {}, this.constructor.defaults );
   this.option( options );
@@ -122,7 +122,7 @@ function Outlayer( element, options ) {
 Outlayer.defaults = { transitionDuration: 0.4 };
 var proto = Outlayer.prototype;
 proto.option = function( opts ) { utils.extend( this.options, opts ); };
-proto._getOption = function( option ) { return this.options[ option ]; }; // Definido explicitamente
+proto._getOption = function( option ) { return this.options[ option ]; };
 proto.once = function( type, listener ) {
   var _this = this;
   function handler() {
@@ -131,12 +131,11 @@ proto.once = function( type, listener ) {
     }
     listener.apply( this, arguments );
   }
-  // Verifica se this.element suporta addEventListener
   if (this.element && this.element.addEventListener) {
-    this.element.addEventListener( type, handler ); // Linha 204 corrigida
+    this.element.addEventListener( type, handler );
   } else {
     console.warn('Isotope: Não foi possível adicionar ouvinte de evento. Elemento inválido:', this.element);
-    listener.apply( this ); // Chama o listener diretamente como fallback
+    listener.apply( this );
   }
 };
 proto._create = function() {
@@ -216,13 +215,21 @@ proto.dispatchEvent = function( type, event, args ) {
   var evt = new CustomEvent( type, { detail: args });
   this.element.dispatchEvent( evt );
 };
-proto.once = function( type, listener ) {
-  var _this = this;
-  function handler() {
-    _this.element.removeEventListener( type, handler );
-    listener.apply( this, arguments );
+proto.reveal = function( items ) { // Adicionado
+  if ( !items || !items.length ) return;
+  for ( var i=0; i < items.length; i++ ) {
+    var item = items[i];
+    item.reveal();
   }
-  this.element.addEventListener( type, handler );
+  this.dispatchEvent( 'revealComplete', null, [ items ] );
+};
+proto.hide = function( items ) { // Adicionado
+  if ( !items || !items.length ) return;
+  for ( var i=0; i < items.length; i++ ) {
+    var item = items[i];
+    item.hide();
+  }
+  this.dispatchEvent( 'hideComplete', null, [ items ] );
 };
 Outlayer.create = function( namespace, options ) {
   function Class() { Outlayer.apply( this, arguments ); }
