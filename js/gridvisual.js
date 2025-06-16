@@ -12,24 +12,26 @@
     }
 
     // Opções padrão
-    this.defaults = {
-      itemSelector: '.grid-item', // Seletor para itens do grid
-      layoutMode: 'masonry', // Modo de layout (masonry ou fitRows)
-      columnWidth: 'auto', // Largura da coluna ('auto' usa o primeiro item)
-      gutter: 10, // Espaço entre itens
-      transitionDuration: '0.4s', // Duração das animações
-      percentPosition: true, // Posicionamento em porcentagem
-      filter: '*', // Filtro inicial (mostra todos)
-      sortBy: 'original-order', // Ordem inicial
-      sortAscending: true, // Ordem ascendente
-      getSortData: { // Funções de ordenação
-        name: function(elem) { return elem.textContent; },
-        order: '[data-order]',
-        random: function() { return Math.random(); }
-      },
-      hiddenStyle: { opacity: 0, transform: 'scale(0.5)' }, // Estilo para itens ocultos
-      visibleStyle: { opacity: 1, transform: 'scale(1)' } // Estilo para itens visíveis
-    };
+    // Opções padrão
+this.defaults = {
+  itemSelector: '.grid-item',
+  layoutMode: 'masonry',
+  columnWidth: 'auto',
+  gutter: 10,
+  transitionDuration: '0.4s',
+  transitionTimingFunction: 'ease-in-out', // Novo: função de easing
+  percentPosition: true,
+  filter: '*',
+  sortBy: 'original-order',
+  sortAscending: true,
+  getSortData: {
+    name: function(elem) { return elem.textContent; },
+    order: '[data-order]',
+    random: function() { return Math.random(); }
+  },
+  hiddenStyle: { opacity: 0, transform: 'scale(0.5)' },
+  visibleStyle: { opacity: 1, transform: 'scale(1)' }
+};
 
     // Mescla opções fornecidas com padrão
     this.options = Object.assign({}, this.defaults, options);
@@ -50,8 +52,8 @@
 
       // Aplica transições aos itens
       this.items.forEach(function(item) {
-        item.element.style.transition = `left ${this.options.transitionDuration}, top ${this.options.transitionDuration}, opacity ${this.options.transitionDuration}, transform ${this.options.transitionDuration}`;
-      }, this);
+    item.element.style.transition = `left ${this.options.transitionDuration} ${this.options.transitionTimingFunction}, top ${this.options.transitionDuration} ${this.options.transitionTimingFunction}, opacity ${this.options.transitionDuration} ${this.options.transitionTimingFunction}, transform ${this.options.transitionDuration} ${this.options.transitionTimingFunction}`;
+  }, this);
 
       // Calcula tamanhos
       this._getSize();
@@ -165,29 +167,40 @@
 
     // Aplica animações de mostrar/esconder
     _hideReveal: function(filterResult) {
-      this.hide(filterResult.needHide);
+  if (filterResult.needHide.length) {
+    this.hide(filterResult.needHide);
+    // Aguarda a transição de hide antes de revelar
+    setTimeout(() => {
       this.reveal(filterResult.needReveal);
-    },
+    }, parseFloat(this.options.transitionDuration) * 1000);
+  } else {
+    this.reveal(filterResult.needReveal);
+  }
+},
 
     // Esconde itens com animação
     hide: function(items) {
-      items.forEach(function(item) {
-        Object.assign(item.element.style, this.options.hiddenStyle);
-        setTimeout(() => {
-          if (!item.isVisible) {
-            item.element.style.display = 'none';
-          }
-        }, parseFloat(this.options.transitionDuration) * 1000);
-      }, this);
-    },
+  items.forEach(function(item) {
+    Object.assign(item.element.style, this.options.hiddenStyle);
+    const onTransitionEnd = () => {
+      if (!item.isVisible) {
+        item.element.style.display = 'none';
+      }
+      item.element.removeEventListener('transitionend', onTransitionEnd);
+    };
+    item.element.addEventListener('transitionend', onTransitionEnd);
+  }, this);
+},
 
     // Mostra itens com animação
     reveal: function(items) {
-      items.forEach(function(item) {
-        item.element.style.display = '';
-        Object.assign(item.element.style, this.options.visibleStyle);
-      }, this);
-    }
+  items.forEach(function(item) {
+    item.element.style.display = '';
+    requestAnimationFrame(() => {
+      Object.assign(item.element.style, this.options.visibleStyle);
+    });
+  }, this);
+}
   });
 })(window);/// fim parte 3
 // PortfolioGrid: Biblioteca para criar galerias dinâmicas - Parte 4 (Ordenação)
@@ -291,12 +304,13 @@
 
     // Posiciona os itens
     _layoutItems: function() {
-      if (this.options.layoutMode === 'masonry') {
-        this._layoutMasonry();
-      } else if (this.options.layoutMode === 'fitRows') {
-        this._layoutFitRows();
-      }
-    },
+  this._getSize(); // Recalcula tamanhos antes de posicionar
+  if (this.options.layoutMode === 'masonry') {
+    this._layoutMasonry();
+  } else if (this.options.layoutMode === 'fitRows') {
+    this._layoutFitRows();
+  }
+},
 
     // Layout Masonry
     _layoutMasonry: function() {
