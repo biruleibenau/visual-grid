@@ -7,7 +7,8 @@
  * Copyright 2010-2018 Metafizzy
  * Reformatado e corrigido para CodePen, 15 de junho de 2025
  */
-
+// No início de grid.js
+console.log('Iniciando carregamento de grid.js');
 ( function( window, factory ) {
   // UMD: Suporta AMD, CommonJS e browser global
   if ( typeof define === 'function' && define.amd ) {
