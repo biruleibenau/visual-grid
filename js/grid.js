@@ -531,39 +531,40 @@ MasonryMode.prototype._getOption = function( option ) {
   }
   return this.isotope._getOption( option );
 };
+  
+// -------------------------- FitRows -------------------------- //
+/**
+ * Modo de layout FitRows
+ */
+let FitRows = LayoutMode.create( 'fitRows' );
+console.log('FitRows definido:', !!FitRows, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-  // -------------------------- FitRows -------------------------- //
-  /**
-   * Modo de layout FitRows
-   */
-  let FitRows = LayoutMode.create( 'fitRows' );
+proto = FitRows.prototype;
 
-  proto = FitRows.prototype;
+proto._resetLayout = function() {
+  this.x = 0;
+  this.y = 0;
+  this.maxY = 0;
+  this._getMeasurement( 'gutter', 'outerWidth' );
+};
 
-  proto._resetLayout = function() {
+proto._getItemLayoutPosition = function( item ) {
+  item.getSize();
+  let itemWidth = item.size.outerWidth + this.gutter;
+  let containerWidth = this.isotope.size.innerWidth + this.gutter;
+  if ( this.x !== 0 && itemWidth + this.x > containerWidth ) {
     this.x = 0;
-    this.y = 0;
-    this.maxY = 0;
-    this._getMeasurement( 'gutter', 'outerWidth' );
-  };
+    this.y = this.maxY;
+  }
+  let position = { x: this.x, y: this.y };
+  this.maxY = Math.max( this.maxY, this.y + item.size.outerHeight );
+  this.x += itemWidth;
+  return position;
+};
 
-  proto._getItemLayoutPosition = function( item ) {
-    item.getSize();
-    let itemWidth = item.size.outerWidth + this.gutter;
-    let containerWidth = this.isotope.size.innerWidth + this.gutter;
-    if ( this.x !== 0 && itemWidth + this.x > containerWidth ) {
-      this.x = 0;
-      this.y = this.maxY;
-    }
-    let position = { x: this.x, y: this.y };
-    this.maxY = Math.max( this.maxY, this.y + item.size.outerHeight );
-    this.x += itemWidth;
-    return position;
-  };
-
-  proto._getContainerSize = function() {
-    return { height: this.maxY };
-  };
+proto._getContainerSize = function() {
+  return { height: this.maxY };
+};
 
   // -------------------------- Isotope Item -------------------------- //
   /**
@@ -625,7 +626,7 @@ MasonryMode.prototype._getOption = function( option ) {
   }
   console.log('Modos registrados:', Object.keys(this.modes));
 };
-
+  
   proto.reloadItems = function() {
     this.itemGUID = 0;
     Outlayer.prototype.reloadItems.call( this );
@@ -648,6 +649,17 @@ MasonryMode.prototype._getOption = function( option ) {
     console.error('Modo não encontrado:', name);
     return;
   }
+  let initialOpts = this.options[ name ] || {};
+  console.log('Opções iniciais para', name, ':', initialOpts);
+  this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
+  try {
+    this.modes[ name ] = new Mode( this );
+    console.log('Modo registrado com sucesso:', name, !!this.modes[ name ]);
+  } catch (error) {
+    console.error('Erro ao criar instância do modo:', name, error);
+  }
+};
+  
   let initialOpts = this.options[ name ] || {};
   this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
   try {
