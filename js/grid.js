@@ -668,8 +668,7 @@ proto._getContainerSize = function() {
   } catch (error) {
     console.error('Erro ao criar instância do modo:', name, error);
   }
-};
-
+  
   proto.layout = function() {
     if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
       this.arrange();
