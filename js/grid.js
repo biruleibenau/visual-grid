@@ -8,7 +8,6 @@
  */
 
 ( function( window, factory ) {
-  // Módulo universal (UMD)
   if ( typeof define === 'function' && define.amd ) {
     define( factory );
   } else if ( typeof module === 'object' && module.exports ) {
@@ -118,6 +117,7 @@ function Outlayer( element, options ) {
 Outlayer.defaults = { transitionDuration: 0.4 };
 var proto = Outlayer.prototype;
 proto.option = function( opts ) { utils.extend( this.options, opts ); };
+proto._getOption = function( option ) { return this.options[ option ]; }; // Definido explicitamente
 proto._create = function() {
   this._getItems();
   this.layoutItems( this.items );
@@ -230,7 +230,6 @@ itemProto.applyPosition = function( position, isInstant ) {
 
 // -------------------------- Masonry -------------------------- //
 var Masonry = Outlayer.create('masonry');
-// Corrige o erro de fitWidth inicializando compatOptions
 Masonry.compatOptions = {};
 Masonry.compatOptions.fitWidth = 'isFitWidth';
 proto = Masonry.prototype;
@@ -724,7 +723,7 @@ proto.shuffle = function() {
   this._layout();
 };
 proto._noTransition = function( fn, args ) {
-  var transitionDuration = this.options.transitionDuration;
+  var transitionDuration = this._getOption('transitionDuration');
   this.options.transitionDuration = 0;
   var returnValue = fn.apply( this, args );
   this.options.transitionDuration = transitionDuration;
