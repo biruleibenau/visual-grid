@@ -614,6 +614,7 @@
     this.sortHistory = [ 'original-order' ];
     // Inicializa todos os modos de layout
     for ( let name in LayoutMode.modes ) {
+	  console.log('Registrando modo:', name); // Adicione isso
       this._initLayoutMode( name );
     }
   };
