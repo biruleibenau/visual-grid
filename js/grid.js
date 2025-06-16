@@ -73,6 +73,12 @@
       if ( index !== -1 ) arr.splice( index, 1 );
     }
   };
+  console.log('Dependências iniciais:', {
+  utils: !!utils,
+  getSize: !!getSize,
+  matchesSelector: !!matchesSelector,
+  Outlayer: !!Outlayer
+});
 
   // -------------------------- Get Size -------------------------- //
   /**
