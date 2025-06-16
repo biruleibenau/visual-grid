@@ -532,40 +532,6 @@ MasonryMode.prototype._getOption = function( option ) {
   return this.isotope._getOption( option );
 };
 
-  // -------------------------- Masonry Mode -------------------------- //
-  /**
-   * Modo de layout Masonry (adaptado para Isotope)
-   */
-  let MasonryMode = LayoutMode.create( 'masonry' );
-
-  proto = MasonryMode.prototype;
-
-  let keepModeMethods = {
-    _getElementOffset: true,
-    layout: true,
-    _getMeasurement: true
-  };
-
-  for ( let method in Masonry.prototype ) {
-    if ( !keepModeMethods[ method ] ) {
-      proto[ method ] = Masonry.prototype[ method ];
-    }
-  }
-
-  let measureColumns = proto.measureColumns;
-  proto.measureColumns = function() {
-    this.items = this.isotope.filteredItems;
-    measureColumns.call( this );
-  };
-
-  let _getOption = proto._getOption;
-  proto._getOption = function( option ) {
-    if ( option === 'fitWidth' ) {
-      return this.options.isFitWidth !== undefined ? this.options.isFitWidth : this.options.fitWidth;
-    }
-    return _getOption.apply( this.isotope, arguments );
-  };
-
   // -------------------------- FitRows -------------------------- //
   /**
    * Modo de layout FitRows
