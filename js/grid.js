@@ -605,13 +605,14 @@ proto._getContainerSize = function() {
   Isotope.LayoutMode = LayoutMode;
 
   proto = Isotope.prototype;
-
   proto._create = function() {
   console.log('Iniciando _create');
   this.itemGUID = 0;
   this._sorters = {};
   this._getSorters();
+  console.log('Após getSorters');
   Outlayer.prototype._create.call( this );
+  console.log('Após Outlayer._create');
   this.modes = {};
   this.filteredItems = this.items;
   this.sortHistory = [ 'original-order' ];
@@ -625,6 +626,7 @@ proto._getContainerSize = function() {
     }
   }
   console.log('Modos registrados:', Object.keys(this.modes));
+  console.log('Finalizando _create');
 };
   
   proto.reloadItems = function() {
