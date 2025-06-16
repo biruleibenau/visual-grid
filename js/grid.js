@@ -410,7 +410,7 @@ MasonryMode.prototype._resetLayout = function() {
   this.maxY = 0;
   this.horizontalColIndex = 0;
 };
-
+  
 MasonryMode.prototype.measureColumns = function() {
   this.getContainerWidth();
   if ( !this.columnWidth ) {
