@@ -48,7 +48,6 @@
    * Funções utilitárias (fizzy-ui-utils)
    */
   const utils = {
-	  console.log('entrou aqui 1');
     extend( a, b ) {
       for ( let prop in b ) {
         if ( b.hasOwnProperty( prop ) ) {
@@ -73,13 +72,13 @@
       if ( index !== -1 ) arr.splice( index, 1 );
     }
   };
+  console.log('Utils definido'); // Movido para fora
   
   // -------------------------- Get Size -------------------------- //
   /**
    * Mede tamanhos e margens de elementos (get-size)
    */
   const getSize = ( function() {
-	  console.log('entrou aqui 2');
     function getStyleSize( value ) {
       let num = parseFloat( value );
       return isNaN( num ) ? 0 : num;
@@ -113,13 +112,13 @@
     }
     return getSize;
   } )();
+  console.log('GetSize definido'); // Movido para fora
 
   // -------------------------- Matches Selector -------------------------- //
   /**
    * Verifica se um elemento corresponde a um seletor CSS (matches-selector)
    */
   const matchesSelector = ( function() {
-	  console.log('entrou aquui 3');
     let matchesMethod = ( function() {
       let ElemProto = Element.prototype;
       if ( ElemProto.matches ) return 'matches';
@@ -141,13 +140,12 @@
       return false;
     };
   } )();
-
+console.log('MatchesSelector definido'); // Movido para fora
   // -------------------------- Outlayer -------------------------- //
   /**
    * Classe base para layouts (Outlayer)
    */
   function Outlayer( element, options ) {
-	  console.log('entrou qui 4');
     // Valida o elemento
     this.element = typeof element === 'string' ? document.querySelector( element ) : element;
     if ( !this.element || !( this.element instanceof HTMLElement ) ) {
@@ -157,6 +155,7 @@
     this.options = utils.extend( {}, this.constructor.defaults );
     this.option( options );
     this.items = [];
+	console.log('Outlayer instanciado'); // Movido para dentro da função
   }
 
   Outlayer.defaults = {
@@ -295,6 +294,7 @@
     if ( !items || !items.length ) return;
     for ( let i = 0; i < items.length; i++ ) {
       items[i].hide();
+	  console.log('Item escondido:', items[i].element.className);
     }
     this.dispatchEvent( 'hideComplete', null, [ items ] );
   };
@@ -740,20 +740,12 @@ proto._getContainerSize = function() {
   let hiddenMatched = [];
   let visibleUnmatched = [];
   let test = this._getFilterTest( filter );
-  console.log('Filtrando com:', filter); // Novo log
-  console.log('entrou aqui:', filterValue);
-      try {
-        $grid.isotope({ filter: filterValue });
-        console.log('Filtro aplicado com sucesso log no grid.js:', filterValue);
-        console.log('Itens visíveis:', $grid.find('.grid-item:not(.isotope-hidden)').length, $grid.find('.grid-item:not(.isotope-hidden)').map((i, el) => el.className).get());
-      } catch (error) {
-        console.error('Erro ao aplicar filtro:', error);
-      }
+  console.log('Filtrando com:', filter);
   for ( let i = 0; i < items.length; i++ ) {
     let item = items[i];
     if ( item.isIgnored ) continue;
     let isMatched = test( item );
-    console.log('Item:', item.element.className, 'isMatched:', isMatched); // Novo log
+    console.log('Item:', item.element.className, 'isMatched:', isMatched);
     if ( isMatched ) matches.push( item );
     if ( isMatched && item.isHidden ) hiddenMatched.push( item );
     else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
@@ -762,13 +754,14 @@ proto._getContainerSize = function() {
     matches: matches.length,
     needReveal: hiddenMatched.length,
     needHide: visibleUnmatched.length
-  }); // Novo log
+  });
   return {
     matches: matches,
     needReveal: hiddenMatched,
     needHide: visibleUnmatched
   };
 };
+
 proto._getFilterTest = function( filter ) {
   console.log('Criando teste de filtro para:', filter); // Novo log
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
