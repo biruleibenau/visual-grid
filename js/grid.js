@@ -908,7 +908,12 @@ proto._getFilterTest = function( filter ) {
 
  proto._mode = function() {
   let layoutMode = this.options.layoutMode;
-  console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
+ console.log(
+  'Acessando modo:',
+  layoutMode,
+  'Modos disponíveis:',
+  this.modes ? Object.keys(this.modes) : '(modes indefinido)'
+);
   let mode = this.modes[ layoutMode ];
   if ( !mode ) {
     console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
