@@ -1,42 +1,37 @@
-// No início de grid.js
-( function( window, factory ) {
-  try {
-    if ( typeof define === 'function' && define.amd ) {
-      define( factory );
-    } else if ( typeof module === 'object' && module.exports ) {
-      module.exports = factory();
-    } else {
-      window.Isotope = factory();
-      if ( window.jQuery ) {
-        jQuery.fn.isotope = function( options, callback ) {
-          return this.each( function() {
-            var $this = jQuery( this );
-            var instance = $this.data( 'isotope' );
-            if ( !instance && typeof options === 'object' ) {
-              instance = new window.Isotope( this, options );
-              $this.data( 'isotope', instance );
-            } else if ( instance ) {
-              if ( typeof options === 'string' ) {
-                instance[ options ].apply( instance, Array.prototype.slice.call( arguments, 1 ) );
-              } else if ( typeof options === 'object' ) {
-                instance.option( options );
-                instance.arrange();
-              }
-            }
-            if ( typeof callback === 'function' ) {
-              instance.once( 'arrangeComplete', callback );
-            }
-          });
-        };
-      }
-    }
-  } catch ( error ) {
-    console.error('Erro ao executar UMD wrapper:', error);
-  }
-}( window, function factory() {
-  'use strict';
-  // resto do código da factory aqui
+(function(window, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(factory);
+  } else if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    var Isotope = factory(); // <-- aqui sim, factory() retorna a classe final
+    window.Isotope = Isotope;
 
+    if (window.jQuery) {
+      jQuery.fn.isotope = function(options, callback) {
+        return this.each(function() {
+          var $this = jQuery(this);
+          var instance = $this.data('isotope');
+          if (!instance && typeof options === 'object') {
+            instance = new Isotope(this, options); // use 'Isotope' aqui
+            $this.data('isotope', instance);
+          } else if (instance) {
+            if (typeof options === 'string') {
+              instance[options].apply(instance, Array.prototype.slice.call(arguments, 1));
+            } else if (typeof options === 'object') {
+              instance.option(options);
+              instance.arrange();
+            }
+          }
+          if (typeof callback === 'function') {
+            instance.once('arrangeComplete', callback);
+          }
+        });
+      };
+    }
+  }
+})(window, function factory() {
+  'use strict';
 
   // -------------------------- Utils -------------------------- //
   /**
