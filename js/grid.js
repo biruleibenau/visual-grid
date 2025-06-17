@@ -320,13 +320,14 @@ Outlayer.defaults = {
     this.outlayer = outlayer;
   };
 
-  proto = Outlayer.Item.prototype;
+  let itemProto = Outlayer.Item.prototype;
 
-  proto.getSize = function() {
+
+  itemProto.getSize = function() {
     this.size = getSize( this.element );
   };
 
-  proto.applyPosition = function( position, isInstant ) {
+  itemProto.applyPosition = function( position, isInstant ) {
   let style = this.element.style;
   style.position = 'absolute';
   style.left = position.x + 'px';
@@ -338,13 +339,13 @@ Outlayer.defaults = {
   }
 };
 
-  proto.reveal = function() {
+  itemProto.reveal = function() {
   this.element.style.display = '';
   this.element.style.opacity = '1';
   this.element.style.transform = 'none';
 };
 
-  proto.hide = function() {
+  itemProto.hide = function() {
     this.element.style.display = 'none';
   };
 
@@ -354,48 +355,48 @@ Outlayer.defaults = {
   matchesSelector: !!matchesSelector,
   Outlayer: !!Outlayer
 }); // fim parte 6
-
-  // -------------------------- Layout Mode -------------------------- //
-  /**
-   * Classe base para modos de layout
-   */
-  function LayoutMode( isotope ) {
-	  console.log('entrou aqui 5');
-    this.isotope = isotope;
-    if ( isotope ) {
-      this.options = utils.extend( {}, this.constructor.options );
-      this.element = isotope.element;
-    }
+// -------------------------- Layout Mode -------------------------- //
+/**
+ * Classe base para modos de layout
+ */
+function LayoutMode( isotope ) {
+  // console.log('entrou aqui 5'); // Removido para produção
+  this.isotope = isotope;
+  if ( isotope ) {
+    this.options = utils.extend( {}, this.constructor.options );
+    this.element = isotope.element;
   }
+}
 
-  proto = LayoutMode.prototype;
+let proto = LayoutMode.prototype;
 
-  proto._create = function() {};
-  proto._resetLayout = function() {};
-  proto._getItemLayoutPosition = function() {
-    return { x: 0, y: 0 };
-  };
-  proto._manageStamp = function() {};
-  proto._getContainerSize = function() {
-    return {};
-  };
-  proto.needsResizeLayout = function() {
-    return false;
-  };
+proto._create = function() {};
+proto._resetLayout = function() {};
+proto._getItemLayoutPosition = function() {
+  return { x: 0, y: 0 };
+};
+proto._manageStamp = function() {};
+proto._getContainerSize = function() {
+  return {};
+};
+proto.needsResizeLayout = function() {
+  return false;
+};
 
-  LayoutMode.modes = {};
+LayoutMode.modes = {};
 
-  LayoutMode.create = function( namespace, options ) {
-    function Mode() {
-      LayoutMode.apply( this, arguments );
-    }
-    Mode.prototype = Object.create( LayoutMode.prototype );
-    Mode.prototype.constructor = Mode;
-    Mode.options = options || {};
-    Mode.namespace = namespace;
-    LayoutMode.modes[ namespace ] = Mode;
-    return Mode;
-  };
+LayoutMode.create = function( namespace, options ) {
+  function Mode() {
+    LayoutMode.apply( this, arguments );
+  }
+  Mode.prototype = Object.create( LayoutMode.prototype );
+  Mode.prototype.constructor = Mode;
+  Mode.options = options || {};
+  Mode.namespace = namespace;
+  LayoutMode.modes[ namespace ] = Mode;
+  return Mode;
+};
+
 // -------------------------- Masonry Mode -------------------------- //
 /**
  * Modo de layout Masonry
