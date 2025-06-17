@@ -394,6 +394,9 @@ LayoutMode.create = function( namespace, options ) {
   return Mode;
 };
 
+LayoutMode.prototype.getSize = function() {
+  this.size = getSize(this.element);
+};
 // -------------------------- Masonry Mode -------------------------- //
 /**
  * Modo de layout Masonry
