@@ -532,20 +532,17 @@ MasonryMode.prototype._getOption = function(option) {
 /**
  * Modo de layout FitRows
  */
-const FitRowsMode = Outlayer.create('fitRows', {
-  gutter: 10
-});
-let fitRowsProto = FitRowsMode.prototype;
+let FitRows = LayoutMode.create( 'fitRows' );
+console.log('FitRows definido:', !!FitRows, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-
-fitRowsProto._resetLayout = function() {
+FitRows.prototype._resetLayout = function() {
   this.x = 0;
   this.y = 0;
   this.maxY = 0;
   this._getMeasurement('gutter', 'outerWidth');
 };
 
-fitRowsProto._getItemLayoutPosition = function(item) {
+FitRows.prototype._getItemLayoutPosition = function(item) {
   item.getSize();
   let itemWidth = item.size.outerWidth + this.gutter;
   let containerWidth = this.isotope.size.innerWidth + this.gutter;
@@ -559,7 +556,7 @@ fitRowsProto._getItemLayoutPosition = function(item) {
   return position;
 };
 
-fitRowsProto._getContainerSize = function() {
+FitRows.prototype._getContainerSize = function() {
   return { height: this.maxY };
 };
 
