@@ -283,21 +283,24 @@ console.log('MatchesSelector definido'); // Movido para fora
   };
 
   proto.reveal = function( items ) {
-    if ( !items || !items.length ) return;
-    for ( let i = 0; i < items.length; i++ ) {
-      items[i].reveal();
-    }
-    this.dispatchEvent( 'revealComplete', null, [ items ] );
-  };
+  if ( !items || !items.length ) return;
+  for ( let i = 0; i < items.length; i++ ) {
+    items[i].element.classList.remove('isotope-hidden');
+    items[i].element.style.opacity = '1';
+    items[i].element.style.transform = 'none';
+    console.log('Item revelado:', items[i].element.className);
+  }
+  this.dispatchEvent( 'revealComplete', null, [ items ] );
+};
 
   proto.hide = function( items ) {
-    if ( !items || !items.length ) return;
-    for ( let i = 0; i < items.length; i++ ) {
-      items[i].hide();
-	  console.log('Item escondido:', items[i].element.className);
-    }
-    this.dispatchEvent( 'hideComplete', null, [ items ] );
-  };
+  if ( !items || !items.length ) return;
+  for ( let i = 0; i < items.length; i++ ) {
+    items[i].element.classList.add('isotope-hidden');
+    console.log('Item escondido:', items[i].element.className);
+  }
+  this.dispatchEvent( 'hideComplete', null, [ items ] );
+};
 
   Outlayer.create = function( namespace, options ) {
     function Class() {
@@ -734,7 +737,7 @@ proto._getContainerSize = function() {
     });
   };
 
- proto._filter = function( items ) {
+proto._filter = function( items ) {
   let filter = this.options.filter || '*';
   let matches = [];
   let hiddenMatched = [];
@@ -763,12 +766,15 @@ proto._getContainerSize = function() {
 };
 
 proto._getFilterTest = function( filter ) {
-  console.log('Criando teste de filtro para:', filter); // Novo log
+  console.log('Criando teste de filtro para:', filter);
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
-    console.log('Usando jQuery para filtro'); // Novo log
+    console.log('Usando jQuery para filtro');
     return function( item ) {
       let result = jQuery( item.element ).is( filter );
-      console.log('jQuery.is(', filter, ') para', item.element.className, ':', result); // Novo log
+      console.log('jQuery.is(', filter, ') para', item.element.className, ':', result);
+      // Teste manual
+      let manualResult = item.element.classList.contains( filter.replace('.', '') );
+      console.log('Manual check para', filter, 'em', item.element.className, ':', manualResult);
       return result;
     };
   }
@@ -781,7 +787,7 @@ proto._getFilterTest = function( filter ) {
   console.log('Usando matchesSelector para filtro');
   return function( item ) {
     let result = matchesSelector( item.element, filter );
-    console.log('matchesSelector(', filter, ') para', item.element.className, ':', result); // Novo log
+    console.log('matchesSelector(', filter, ') para', item.element.className, ':', result);
     return result;
   };
 };
