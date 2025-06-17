@@ -1,63 +1,42 @@
-/*!
- * Isotope v3.0.6 - Código Unificado e Reformatado
- * Inclui get-size, matches-selector, fizzy-ui-utils, Outlayer, Masonry, FitRows
- * Suporta jQuery para filtragem
- * Licenciado sob GPLv3 para uso open source ou Licença Comercial
- * https://isotope.metafizzy.co
- * Copyright 2010-2018 Metafizzy
- * Reformatado e corrigido para CodePen, 15 de junho de 2025
- */
 // No início de grid.js
 ( function( window, factory ) {
-  console.log('Iniciando UMD wrapper');
   try {
     if ( typeof define === 'function' && define.amd ) {
-      console.log('Definindo Isotope para AMD');
       define( factory );
     } else if ( typeof module === 'object' && module.exports ) {
-      console.log('Definindo Isotope para CommonJS');
       module.exports = factory();
     } else {
-      console.log('Definindo Isotope para navegador');
       window.Isotope = factory();
-     if ( window.jQuery ) {
-  console.log('jQuery detectado, registrando plugin Isotope');
-  jQuery.fn.isotope = function( options, callback ) {
-    return this.each( function() {
-      var $this = jQuery( this );
-      // Reutilizar instância existente, se disponível
-      var instance = $this.data( 'isotope' );
-      if ( !instance && typeof options === 'object' ) {
-        instance = new window.Isotope( this, options );
-        $this.data( 'isotope', instance );
-        console.log('Nova instância do Isotope criada para:', this);
-      } else if ( instance ) {
-        // Aplicar opções ou métodos
-        if ( typeof options === 'string' ) {
-          instance[ options ].apply( instance, Array.prototype.slice.call( arguments, 1 ) );
-        } else if ( typeof options === 'object' ) {
-          instance.option( options );
-          instance.arrange();
-        }
-        console.log('Instância existente do Isotope reutilizada para:', this);
+      if ( window.jQuery ) {
+        jQuery.fn.isotope = function( options, callback ) {
+          return this.each( function() {
+            var $this = jQuery( this );
+            var instance = $this.data( 'isotope' );
+            if ( !instance && typeof options === 'object' ) {
+              instance = new window.Isotope( this, options );
+              $this.data( 'isotope', instance );
+            } else if ( instance ) {
+              if ( typeof options === 'string' ) {
+                instance[ options ].apply( instance, Array.prototype.slice.call( arguments, 1 ) );
+              } else if ( typeof options === 'object' ) {
+                instance.option( options );
+                instance.arrange();
+              }
+            }
+            if ( typeof callback === 'function' ) {
+              instance.once( 'arrangeComplete', callback );
+            }
+          });
+        };
       }
-      if ( typeof callback === 'function' ) {
-        instance.once( 'arrangeComplete', callback );
-      }
-    });
-  };
-  console.log('Plugin jQuery do Isotope registrado');
-} else {
-  console.log('jQuery não detectado, pulando integração');
-}
-      console.log('Isotope atribuído a window.Isotope');
     }
   } catch ( error ) {
     console.error('Erro ao executar UMD wrapper:', error);
   }
 }( window, function factory() {
-  console.log('Iniciando factory do Isotope');
   'use strict';
+  // resto do código da factory aqui
+
 
   // -------------------------- Utils -------------------------- //
   /**
@@ -162,21 +141,20 @@ console.log('MatchesSelector definido'); // parte 4 M
    * Classe base para layouts (Outlayer)
    */
   function Outlayer( element, options ) {
-    // Valida o elemento
-    this.element = typeof element === 'string' ? document.querySelector( element ) : element;
-    if ( !this.element || !( this.element instanceof HTMLElement ) ) {
-      console.error( 'Isotope: Elemento inválido fornecido:', element );
-      this.element = document.createElement( 'div' ); // Fallback
-    }
-    this.options = utils.extend( {}, this.constructor.defaults );
-    this.option( options );
-    this.items = [];
-	console.log('Outlayer instanciado'); // Movido para dentro da função
+  this.element = typeof element === 'string' ? document.querySelector( element ) : element;
+  if ( !this.element || !( this.element instanceof HTMLElement ) ) {
+    console.error( 'Isotope: Elemento inválido fornecido:', element );
+    this.element = document.createElement( 'div' ); // Fallback
   }
+  this.options = utils.extend( {}, this.constructor.defaults );
+  this.option( options );
+  this.items = [];
+  // console.log('Outlayer instanciado');
+}
 
-  Outlayer.defaults = {
-    transitionDuration: 0.4
-  };
+Outlayer.defaults = {
+  transitionDuration: 0.4
+};
 
   let proto = Outlayer.prototype;
 
@@ -232,13 +210,13 @@ console.log('MatchesSelector definido'); // parte 4 M
   };
 
   proto.layoutItems = function( items, isInstant ) {
-    for ( let i = 0; i < items.length; i++ ) {
-      let item = items[i];
-      if ( item.isIgnored ) continue;
-      let position = this._getItemLayoutPosition( item );
-      item.applyPosition( position, isInstant );
-    }
-  };
+  for ( let i = 0; i < items.length; i++ ) {
+    let item = items[i];
+    if ( item.isIgnored ) continue;
+    let position = this._getItemLayoutPosition( item );
+    item.applyPosition( position, isInstant );
+  }
+};
 
   proto._getElementOffset = function( elem ) {
     let rect = elem.getBoundingClientRect();
@@ -349,20 +327,22 @@ console.log('MatchesSelector definido'); // parte 4 M
   };
 
   proto.applyPosition = function( position, isInstant ) {
-    let style = this.element.style;
-    style.position = 'absolute';
-    style.left = position.x + 'px';
-    style.top = position.y + 'px';
-    if ( !isInstant ) {
-      style.transition = `all ${ this.outlayer.options.transitionDuration }s`;
-    }
-  };
+  let style = this.element.style;
+  style.position = 'absolute';
+  style.left = position.x + 'px';
+  style.top = position.y + 'px';
+  if ( !isInstant ) {
+    style.transition = `all ${ this.outlayer.options.transitionDuration }s`;
+  } else {
+    style.transition = 'none';
+  }
+};
 
   proto.reveal = function() {
-    this.element.style.display = '';
-    this.element.style.opacity = '1';
-    this.element.style.transform = 'none';
-  };
+  this.element.style.display = '';
+  this.element.style.opacity = '1';
+  this.element.style.transform = 'none';
+};
 
   proto.hide = function() {
     this.element.style.display = 'none';
@@ -416,340 +396,356 @@ console.log('MatchesSelector definido'); // parte 4 M
     LayoutMode.modes[ namespace ] = Mode;
     return Mode;
   };
-
 // -------------------------- Masonry Mode -------------------------- //
 /**
  * Modo de layout Masonry
  */
-let MasonryMode = LayoutMode.create( 'masonry' );
+let MasonryMode = LayoutMode.create('masonry');
 console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-MasonryMode.prototype._resetLayout = function() {
+MasonryMode.prototype._resetLayout = function () {
   this.getSize();
-  this._getMeasurement( 'columnWidth', 'outerWidth' );
-  this._getMeasurement( 'gutter', 'outerWidth' );
+  this._getMeasurement('columnWidth', 'outerWidth');
+  this._getMeasurement('gutter', 'outerWidth');
   this.measureColumns();
-  this.colYs = [];
-  for ( let i = 0; i < this.cols; i++ ) {
-    this.colYs.push( 0 );
-  }
+  this.colYs = Array(this.cols).fill(0);
   this.maxY = 0;
   this.horizontalColIndex = 0;
 };
-  
-MasonryMode.prototype.measureColumns = function() {
+
+MasonryMode.prototype.measureColumns = function () {
   this.getContainerWidth();
-  if ( !this.columnWidth ) {
-    let firstItem = this.isotope.items[0];
-    let firstItemElem = firstItem && firstItem.element;
-    this.columnWidth = firstItemElem && getSize( firstItemElem ).outerWidth || this.containerWidth;
+  if (!this.columnWidth) {
+    const firstItemElem = this.isotope.items[0]?.element;
+    this.columnWidth = firstItemElem ? getSize(firstItemElem).outerWidth : this.containerWidth;
   }
   this.columnWidth += this.gutter;
-  let containerWidth = this.containerWidth + this.gutter;
-  let cols = containerWidth / this.columnWidth;
-  let excess = this.columnWidth - ( containerWidth % this.columnWidth );
-  let mathMethod = excess && excess < 1 ? 'round' : 'floor';
-  cols = Math[ mathMethod ]( cols );
-  this.cols = Math.max( cols, 1 );
+
+  const containerWidth = this.containerWidth + this.gutter;
+  const remainder = containerWidth % this.columnWidth;
+  const method = remainder && remainder < 1 ? 'round' : 'floor';
+
+  this.cols = Math.max(Math[method](containerWidth / this.columnWidth), 1);
 };
 
-MasonryMode.prototype.getContainerWidth = function() {
-  let isFitWidth = this.isotope._getOption( 'fitWidth' );
-  let container = isFitWidth ? this.element.parentNode : this.element;
-  let size = getSize( container );
-  this.containerWidth = size && size.innerWidth;
+MasonryMode.prototype.getContainerWidth = function () {
+  const isFitWidth = this.isotope._getOption('fitWidth');
+  const container = isFitWidth ? this.element.parentNode : this.element;
+  const size = getSize(container);
+  this.containerWidth = size?.innerWidth || container.offsetWidth;
 };
 
-MasonryMode.prototype._getItemLayoutPosition = function( item ) {
+MasonryMode.prototype._getItemLayoutPosition = function (item) {
   item.getSize();
-  let remainder = item.size.outerWidth % this.columnWidth;
-  let mathMethod = remainder && remainder < 1 ? 'round' : 'ceil';
-  let colSpan = Math[ mathMethod ]( item.size.outerWidth / this.columnWidth );
-  colSpan = Math.min( colSpan, this.cols );
-  let colPosMethod = this.options.horizontalOrder ? '_getHorizontalColPosition' : '_getTopColPosition';
-  let colPosition = this[ colPosMethod ]( colSpan, item );
-  let position = { x: this.columnWidth * colPosition.col, y: colPosition.y };
-  let setHeight = colPosition.y + item.size.outerHeight;
-  let setMax = colSpan + colPosition.col;
-  for ( let i = colPosition.col; i < setMax; i++ ) {
-    this.colYs[i] = setHeight;
+  const remainder = item.size.outerWidth % this.columnWidth;
+  const colSpan = Math.min(
+    Math[(remainder && remainder < 1) ? 'round' : 'ceil'](item.size.outerWidth / this.columnWidth),
+    this.cols
+  );
+
+  const colPosition = this[this.options.horizontalOrder ? '_getHorizontalColPosition' : '_getTopColPosition'](colSpan, item);
+  const position = {
+    x: this.columnWidth * colPosition.col,
+    y: colPosition.y
+  };
+
+  const endCol = colPosition.col + colSpan;
+  for (let i = colPosition.col; i < endCol; i++) {
+    this.colYs[i] = position.y + item.size.outerHeight;
   }
+
   return position;
 };
 
-MasonryMode.prototype._getTopColPosition = function( colSpan ) {
-  let colGroup = this._getTopColGroup( colSpan );
-  let minimumY = Math.min.apply( Math, colGroup );
-  return { col: colGroup.indexOf( minimumY ), y: minimumY };
+MasonryMode.prototype._getTopColPosition = function (colSpan) {
+  const colGroup = this._getTopColGroup(colSpan);
+  const minY = Math.min(...colGroup);
+  return {
+    col: colGroup.indexOf(minY),
+    y: minY
+  };
 };
 
-MasonryMode.prototype._getTopColGroup = function( colSpan ) {
-  if ( colSpan < 2 ) return this.colYs;
-  let colGroup = [];
-  let groupCount = this.cols + 1 - colSpan;
-  for ( let i = 0; i < groupCount; i++ ) {
-    colGroup[i] = this._getColGroupY( i, colSpan );
-  }
-  return colGroup;
+MasonryMode.prototype._getTopColGroup = function (colSpan) {
+  if (colSpan < 2) return this.colYs;
+  const groupCount = this.cols + 1 - colSpan;
+  return Array.from({ length: groupCount }, (_, i) => this._getColGroupY(i, colSpan));
 };
 
-MasonryMode.prototype._getColGroupY = function( col, colSpan ) {
-  if ( colSpan < 2 ) return this.colYs[ col ];
-  let groupColYs = this.colYs.slice( col, col + colSpan );
-  return Math.max.apply( Math, groupColYs );
+MasonryMode.prototype._getColGroupY = function (col, colSpan) {
+  return colSpan < 2
+    ? this.colYs[col]
+    : Math.max(...this.colYs.slice(col, col + colSpan));
 };
 
-MasonryMode.prototype._getHorizontalColPosition = function( colSpan, item ) {
+MasonryMode.prototype._getHorizontalColPosition = function (colSpan, item) {
   let col = this.horizontalColIndex % this.cols;
-  let isOver = colSpan > 1 && col + colSpan > this.cols;
-  col = isOver ? 0 : col;
-  let hasSize = item.size.outerWidth && item.size.outerHeight;
-  this.horizontalColIndex = hasSize ? col + colSpan : this.horizontalColIndex;
-  return { col: col, y: this._getColGroupY( col, colSpan ) };
+  if (colSpan > 1 && col + colSpan > this.cols) col = 0;
+
+  if (item.size.outerWidth && item.size.outerHeight) {
+    this.horizontalColIndex = col + colSpan;
+  }
+
+  return {
+    col,
+    y: this._getColGroupY(col, colSpan)
+  };
 };
 
-MasonryMode.prototype._manageStamp = function( stamp ) {
-  let stampSize = getSize( stamp );
-  let offset = this.isotope._getElementOffset( stamp );
-  let isOriginLeft = this.isotope._getOption( 'originLeft' );
-  let firstX = isOriginLeft ? offset.left : offset.right;
-  let lastX = firstX + stampSize.outerWidth;
-  let firstCol = Math.floor( firstX / this.columnWidth );
-  firstCol = Math.max( 0, firstCol );
-  let lastCol = Math.floor( lastX / this.columnWidth );
-  lastCol -= lastX % this.columnWidth ? 0 : 1;
-  lastCol = Math.min( this.cols - 1, lastCol );
-  let isOriginTop = this.isotope._getOption( 'originTop' );
-  let stampMaxY = ( isOriginTop ? offset.top : offset.bottom ) + stampSize.outerHeight;
-  for ( let i = firstCol; i <= lastCol; i++ ) {
-    this.colYs[i] = Math.max( stampMaxY, this.colYs[i] );
+MasonryMode.prototype._manageStamp = function (stamp) {
+  const stampSize = getSize(stamp);
+  const offset = this.isotope._getElementOffset(stamp);
+  const isOriginLeft = this.isotope._getOption('originLeft');
+
+  const firstX = isOriginLeft ? offset.left : offset.right;
+  const lastX = firstX + stampSize.outerWidth;
+
+  let firstCol = Math.floor(firstX / this.columnWidth);
+  firstCol = Math.max(0, firstCol);
+
+  let lastCol = Math.floor(lastX / this.columnWidth);
+  if (!(lastX % this.columnWidth)) lastCol -= 1;
+  lastCol = Math.min(this.cols - 1, lastCol);
+
+  const stampMaxY = (this.isotope._getOption('originTop') ? offset.top : offset.bottom) + stampSize.outerHeight;
+  for (let i = firstCol; i <= lastCol; i++) {
+    this.colYs[i] = Math.max(this.colYs[i], stampMaxY);
   }
 };
 
-MasonryMode.prototype._getContainerSize = function() {
-  this.maxY = Math.max.apply( Math, this.colYs );
-  let size = { height: this.maxY };
-  if ( this.isotope._getOption( 'fitWidth' ) ) {
+MasonryMode.prototype._getContainerSize = function () {
+  this.maxY = Math.max(...this.colYs);
+  const size = { height: this.maxY };
+  if (this.isotope._getOption('fitWidth')) {
     size.width = this._getContainerFitWidth();
   }
   return size;
 };
 
-MasonryMode.prototype._getContainerFitWidth = function() {
+MasonryMode.prototype._getContainerFitWidth = function () {
   let unusedCols = 0;
-  let i = this.cols;
-  while ( --i ) {
-    if ( this.colYs[i] !== 0 ) break;
+  for (let i = this.cols - 1; i >= 0; i--) {
+    if (this.colYs[i] !== 0) break;
     unusedCols++;
   }
-  return ( this.cols - unusedCols ) * this.columnWidth - this.gutter;
+  return (this.cols - unusedCols) * this.columnWidth - this.gutter;
 };
 
-MasonryMode.prototype.needsResizeLayout = function() {
-  let previousWidth = this.containerWidth;
+MasonryMode.prototype.needsResizeLayout = function () {
+  const previousWidth = this.containerWidth;
   this.getContainerWidth();
   return previousWidth !== this.containerWidth;
 };
 
-MasonryMode.prototype._getOption = function( option ) {
-  if ( option === 'fitWidth' ) {
-    return this.options.isFitWidth !== undefined ? this.options.isFitWidth : this.options.fitWidth;
-  }
-  return this.isotope._getOption( option );
+MasonryMode.prototype._getOption = function (option) {
+  return option === 'fitWidth'
+    ? (this.options.isFitWidth ?? this.options.fitWidth)
+    : this.isotope._getOption(option);
 };
-  //// fim parte 8
+//// fim parte 8
 // -------------------------- FitRows -------------------------- //
 /**
  * Modo de layout FitRows
  */
-let FitRows = LayoutMode.create( 'fitRows' );
+let FitRows = LayoutMode.create('fitRows');
 console.log('FitRows definido:', !!FitRows, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-proto = FitRows.prototype;
+let proto = FitRows.prototype;
 
-proto._resetLayout = function() {
+proto._resetLayout = function () {
   this.x = 0;
   this.y = 0;
   this.maxY = 0;
-  this._getMeasurement( 'gutter', 'outerWidth' );
+  this._getMeasurement('gutter', 'outerWidth');
 };
 
-proto._getItemLayoutPosition = function( item ) {
+proto._getItemLayoutPosition = function (item) {
   item.getSize();
-  let itemWidth = item.size.outerWidth + this.gutter;
-  let containerWidth = this.isotope.size.innerWidth + this.gutter;
-  if ( this.x !== 0 && itemWidth + this.x > containerWidth ) {
+  const itemWidth = item.size.outerWidth + this.gutter;
+
+  // Usa a largura real do container, com fallback para offsetWidth
+  const containerWidth = this.isotope.size?.innerWidth || this.element.offsetWidth;
+
+  if (this.x !== 0 && (itemWidth + this.x > containerWidth)) {
     this.x = 0;
     this.y = this.maxY;
   }
-  let position = { x: this.x, y: this.y };
-  this.maxY = Math.max( this.maxY, this.y + item.size.outerHeight );
+
+  const position = { x: this.x, y: this.y };
+
+  this.maxY = Math.max(this.maxY, this.y + item.size.outerHeight);
   this.x += itemWidth;
+
   return position;
 };
 
-proto._getContainerSize = function() {
+proto._getContainerSize = function () {
   return { height: this.maxY };
 };
-/// fim parte 9
+// fim parte 9
   // -------------------------- Isotope Item -------------------------- //
-/**
- * Item individual do Isotope
- */
-function Item( element, isotope ) {
-  Outlayer.Item.call( this, element, isotope );
-  this.sortData = {};
-}
-
-Item.prototype = Object.create( Outlayer.Item.prototype );
-Item.prototype.constructor = Item;
-
-let proto = Item.prototype;
-
-proto.updateSortData = function() {
-  if ( this.isIgnored ) return;
-  this.sortData.id = this.id;
-  this.sortData[ 'original-order' ] = this.id;
-  let getSortData = this.outlayer.options.getSortData;
-  for ( let key in getSortData ) {
-    let sorter = this.outlayer._sorters[ key ];
-    this.sortData[ key ] = sorter( this.element, this );
+  /**
+   * Item individual do Isotope
+   */
+  function Item( element, isotope ) {
+    Outlayer.Item.call( this, element, isotope );
+    this.sortData = {};
   }
-};
 
-// -------------------------- Isotope -------------------------- //
-/**
- * Classe principal do Isotope
- */
-let Isotope = Outlayer.create( 'isotope', {
-  layoutMode: 'masonry',
-  sortAscending: true,
-  isJQueryFiltering: true
-});
+  Item.prototype = Object.create( Outlayer.Item.prototype );
+  Item.prototype.constructor = Item;
 
-Isotope.Item = Item;
-Isotope.LayoutMode = LayoutMode;
+  proto = Item.prototype;
 
-proto = Isotope.prototype;
+  proto.updateSortData = function() {
+    if ( this.isIgnored ) return;
+    this.sortData.id = this.id;
+    this.sortData[ 'original-order' ] = this.id;
+    let getSortData = this.outlayer.options.getSortData;
+    for ( let key in getSortData ) {
+      let sorter = this.outlayer._sorters[ key ];
+      this.sortData[ key ] = sorter( this.element, this );
+    }
+  };
 
-proto._create = function() {
+  // -------------------------- Isotope -------------------------- //
+  /**
+   * Classe principal do Isotope
+   */
+  let Isotope = Outlayer.create( 'isotope', {
+    layoutMode: 'masonry',
+    sortAscending: true,
+    isJQueryFiltering: true
+  });
+
+  Isotope.Item = Item;
+  Isotope.LayoutMode = LayoutMode;
+
+  proto = Isotope.prototype;
+  proto._create = function() {
+  console.log('Iniciando _create');
   this.itemGUID = 0;
   this._sorters = {};
   this._getSorters();
+  console.log('Após getSorters');
   Outlayer.prototype._create.call( this );
+  console.log('Após Outlayer._create');
   this.modes = {};
   this.filteredItems = this.items;
   this.sortHistory = [ 'original-order' ];
-
-  // Inicializa todos os modos de layout já registrados
+  console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
   for ( let name in LayoutMode.modes ) {
+    console.log('Registrando modo:', name);
     this._initLayoutMode( name );
   }
-
-  // Garante que o modo masonry exista (importante para seu erro)
+  console.log('Modos registrados:', Object.keys(this.modes));
   if (!this.modes.masonry) {
+    console.error('Modo masonry não registrado! Tentando corrigir...');
     this._initLayoutMode('masonry');
   }
+  console.log('Finalizando _create');
 };
+  
+  proto.reloadItems = function() {
+    this.itemGUID = 0;
+    Outlayer.prototype.reloadItems.call( this );
+  };
 
-proto.reloadItems = function() {
-  this.itemGUID = 0;
-  Outlayer.prototype.reloadItems.call( this );
-};
+  proto._itemize = function() {
+    let items = Outlayer.prototype._itemize.apply( this, arguments );
+    for ( let i = 0; i < items.length; i++ ) {
+      let item = items[i];
+      item.id = this.itemGUID++;
+    }
+    this._updateItemsSortData( items );
+    return items;
+  };
 
-proto._itemize = function() {
-  let items = Outlayer.prototype._itemize.apply( this, arguments );
-  for ( let i = 0; i < items.length; i++ ) {
-    let item = items[i];
-    item.id = this.itemGUID++;
-  }
-  this._updateItemsSortData( items );
-  return items;
-};
-
-proto._initLayoutMode = function( name ) {
+  proto._initLayoutMode = function( name ) {
+  console.log('Inicializando modo:', name);
   let Mode = LayoutMode.modes[ name ];
   if (!Mode) {
     console.error('Modo não encontrado:', name);
     return;
   }
+  console.log('Modo encontrado:', !!Mode, 'Namespace:', Mode.namespace);
   let initialOpts = this.options[ name ] || {};
+  console.log('Opções iniciais para', name, ':', initialOpts);
   this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
   try {
     this.modes[ name ] = new Mode( this );
+    console.log('Modo registrado com sucesso:', name, !!this.modes[ name ]);
   } catch (error) {
     console.error('Erro ao criar instância do modo:', name, error);
   }
 };
-
-proto.layout = function() {
-  if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
-    this.arrange();
-    return;
-  }
-  this._layout();
-};
-
-proto._layout = function() {
-  let isInstant = this._getIsInstant();
-  this._resetLayout();
-  this._manageStamps();
-  this.layoutItems( this.filteredItems, isInstant );
-  this._isLayoutInited = true;
-};
-
-proto.arrange = function( opts ) {
-  this.option( opts );
-  this._getIsInstant();
-  let filtered = this._filter( this.items );
-  this.filteredItems = filtered.matches;
-  this._bindArrangeComplete();
-
-  if ( this._isInstant ) {
-    this._noTransition( this._hideReveal, [ filtered ] );
-  } else {
-    this._hideReveal( filtered );
-  }
-
-  this._sort();
-  this._layout();
-};
-
-proto._init = proto.arrange;
-
-proto._hideReveal = function( filtered ) {
-  this.reveal( filtered.needReveal );
-  this.hide( filtered.needHide );
-};
-
-proto._getIsInstant = function() {
-  let isLayoutInstant = this._getOption( 'layoutInstant' );
-  let isInstant = isLayoutInstant !== undefined ? isLayoutInstant : !this._isLayoutInited;
-  this._isInstant = isInstant;
-  return isInstant;
-};
-
-proto._bindArrangeComplete = function() {
-  let isLayoutComplete, isHideComplete, isRevealComplete;
-  let _this = this;
-  function arrangeParallelCallback() {
-    if ( isLayoutComplete && isHideComplete && isRevealComplete ) {
-      _this.dispatchEvent( 'arrangeComplete', null, [ _this.filteredItems ] );
+  
+  proto.layout = function() {
+    if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
+      this.arrange();
+      return;
     }
-  }
-  this.once( 'layoutComplete', function() {
-    isLayoutComplete = true;
-    arrangeParallelCallback();
-  });
-  this.once( 'hideComplete', function() {
-    isHideComplete = true;
-    arrangeParallelCallback();
-  });
-  this.once( 'revealComplete', function() {
-    isRevealComplete = true;
-    arrangeParallelCallback();
-  });
-};
+    this._layout();
+  };
+
+  proto._layout = function() {
+    let isInstant = this._getIsInstant();
+    this._resetLayout();
+    this._manageStamps();
+    this.layoutItems( this.filteredItems, isInstant );
+    this._isLayoutInited = true;
+  };
+
+  proto.arrange = function( opts ) {
+    this.option( opts );
+    this._getIsInstant();
+    let filtered = this._filter( this.items );
+    this.filteredItems = filtered.matches;
+    this._bindArrangeComplete();
+    if ( this._isInstant ) {
+      this._noTransition( this._hideReveal, [ filtered ] );
+    } else {
+      this._hideReveal( filtered );
+    }
+    this._sort();
+    this._layout();
+  };
+
+  proto._init = proto.arrange;
+
+  proto._hideReveal = function( filtered ) {
+    this.reveal( filtered.needReveal );
+    this.hide( filtered.needHide );
+  };
+
+  proto._getIsInstant = function() {
+    let isLayoutInstant = this._getOption( 'layoutInstant' );
+    let isInstant = isLayoutInstant !== undefined ? isLayoutInstant : !this._isLayoutInited;
+    this._isInstant = isInstant;
+    return isInstant;
+  };
+
+  proto._bindArrangeComplete = function() {
+    let isLayoutComplete, isHideComplete, isRevealComplete;
+    let _this = this;
+    function arrangeParallelCallback() {
+      if ( isLayoutComplete && isHideComplete && isRevealComplete ) {
+        _this.dispatchEvent( 'arrangeComplete', null, [ _this.filteredItems ] );
+      }
+    }
+    this.once( 'layoutComplete', function() {
+      isLayoutComplete = true;
+      arrangeParallelCallback();
+    });
+    this.once( 'hideComplete', function() {
+      isHideComplete = true;
+      arrangeParallelCallback();
+    });
+    this.once( 'revealComplete', function() {
+      isRevealComplete = true;
+      arrangeParallelCallback();
+    });
+  };
 
 proto._filter = function( items ) {
   let filter = this.options.filter || '*';
@@ -757,18 +753,25 @@ proto._filter = function( items ) {
   let hiddenMatched = [];
   let visibleUnmatched = [];
   let test = this._getFilterTest( filter );
-
+  console.log('Filtrando com:', filter, 'Total de itens:', items.length);
   for ( let i = 0; i < items.length; i++ ) {
     let item = items[i];
     if ( item.isIgnored ) {
+      console.log('Item ignorado:', item.element.className);
       continue;
     }
     let isMatched = test( item );
+    console.log('Item:', item.element.className, 'isMatched:', isMatched, 'isHidden:', item.isHidden);
     if ( isMatched ) matches.push( item );
     if ( isMatched && item.isHidden ) hiddenMatched.push( item );
     else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
   }
-
+  console.log('Resultado do filtro:', {
+    matches: matches.length,
+    needReveal: hiddenMatched.length,
+    needHide: visibleUnmatched.length,
+    matchedClasses: matches.map(item => item.element.className)
+  });
   return {
     matches: matches,
     needReveal: hiddenMatched,
@@ -777,121 +780,138 @@ proto._filter = function( items ) {
 };
 
 proto._getFilterTest = function( filter ) {
+  console.log('Criando teste de filtro para:', filter);
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
+    console.log('Usando jQuery para filtro');
     return function( item ) {
+      console.log('Testando item:', item.element.className, 'Seletor:', filter);
       let $elem = jQuery( item.element );
-      return $elem.is( filter );
+      let result = $elem.is( filter );
+      console.log('jQuery.is(', filter, ') para', item.element.className, ':', result);
+      let manualResult = item.element.classList.contains( filter.replace('.', '') );
+      console.log('Manual check para', filter, 'em', item.element.className, ':', manualResult);
+      // Log adicional para classes do elemento
+      console.log('Classes do elemento:', item.element.className.split(' '));
+      return result;
     };
   }
   if ( typeof filter === 'function' ) {
+    console.log('Usando função personalizada para filtro');
     return function( item ) {
       return filter( item.element );
     };
   }
+  console.log('Usando matchesSelector para filtro');
   return function( item ) {
-    return matchesSelector( item.element, filter );
+    let result = matchesSelector( item.element, filter );
+    console.log('matchesSelector(', filter, ') para', item.element.className, ':', result);
+    return result;
   };
 };
 
-proto.updateSortData = function( elems ) {
-  let items = elems ? this.getItems( utils.makeArray( elems ) ) : this.items;
-  this._getSorters();
-  this._updateItemsSortData( items );
-};
+  proto.updateSortData = function( elems ) {
+    let items = elems ? this.getItems( utils.makeArray( elems ) ) : this.items;
+    this._getSorters();
+    this._updateItemsSortData( items );
+  };
 
-proto._getSorters = function() {
-  let getSortData = this.options.getSortData;
-  for ( let key in getSortData ) {
-    this._sorters[ key ] = mungeSorter( getSortData[ key ] );
-  }
-};
+  proto._getSorters = function() {
+    let getSortData = this.options.getSortData;
+    for ( let key in getSortData ) {
+      this._sorters[ key ] = mungeSorter( getSortData[ key ] );
+    }
+  };
 
-proto._updateItemsSortData = function( items ) {
-  for ( let i = 0; i < items.length; i++ ) {
-    items[i].updateSortData();
-  }
-};
+  proto._updateItemsSortData = function( items ) {
+    for ( let i = 0; i < items.length; i++ ) {
+      items[i].updateSortData();
+    }
+  };
 
-const mungeSorter = ( function() {
-  function mungeSorter( sorter ) {
-    if ( typeof sorter !== 'string' ) return sorter;
-    let args = sorter.trim().split( ' ' );
-    let query = args[0];
-    let attrMatch = query.match( /^\[(.+)\]$/ );
-    let attr = attrMatch && attrMatch[1];
-    let getValue = getValueGetter( attr, query );
-    let parser = Isotope.sortDataParsers[ args[1] ];
-    return parser ? function( elem ) {
-      return elem && parser( getValue( elem ) );
-    } : function( elem ) {
-      return elem && getValue( elem );
-    };
-  }
-  function getValueGetter( attr, query ) {
-    if ( attr ) {
-      return function( elem ) {
-        return elem.getAttribute( attr );
+  const mungeSorter = ( function() {
+    function mungeSorter( sorter ) {
+      if ( typeof sorter !== 'string' ) return sorter;
+      let args = sorter.trim().split( ' ' );
+      let query = args[0];
+      let attrMatch = query.match( /^\[(.+)\]$/ );
+      let attr = attrMatch && attrMatch[1];
+      let getValue = getValueGetter( attr, query );
+      let parser = Isotope.sortDataParsers[ args[1] ];
+      return parser ? function( elem ) {
+        return elem && parser( getValue( elem ) );
+      } : function( elem ) {
+        return elem && getValue( elem );
       };
     }
-    return function( elem ) {
-      let child = elem.querySelector( query );
-      return child && child.textContent;
+    function getValueGetter( attr, query ) {
+      if ( attr ) {
+        return function( elem ) {
+          return elem.getAttribute( attr );
+        };
+      }
+      return function( elem ) {
+        let child = elem.querySelector( query );
+        return child && child.textContent;
+      };
+    }
+    return mungeSorter;
+  } )();
+
+  Isotope.sortDataParsers = {
+    parseInt: function( val ) {
+      return parseInt( val, 10 );
+    },
+    parseFloat: function( val ) {
+      return parseFloat( val );
+    }
+  };
+
+  proto._sort = function() {
+    if ( !this.options.sortBy ) return;
+    let sortBys = utils.makeArray( this.options.sortBy );
+    if ( !this._getIsSameSortBy( sortBys ) ) {
+      this.sortHistory = sortBys.concat( this.sortHistory );
+    }
+    let itemSorter = getItemSorter( this.sortHistory, this.options.sortAscending );
+    this.filteredItems.sort( itemSorter );
+  };
+
+  proto._getIsSameSortBy = function( sortBys ) {
+    for ( let i = 0; i < sortBys.length; i++ ) {
+      if ( sortBys[i] !== this.sortHistory[i] ) return false;
+    }
+    return true;
+  };
+
+  function getItemSorter( sortBys, sortAsc ) {
+    return function( itemA, itemB ) {
+      for ( let i = 0; i < sortBys.length; i++ ) {
+        let sortBy = sortBys[i];
+        let a = itemA.sortData[ sortBy ];
+        let b = itemB.sortData[ sortBy ];
+        if ( a > b || a < b ) {
+          let isAscending = sortAsc[ sortBy ] !== undefined ? sortAsc[ sortBy ] : sortAsc;
+          let direction = isAscending ? 1 : -1;
+          return ( a > b ? 1 : -1 ) * direction;
+        }
+      }
+      return 0;
     };
   }
-  return mungeSorter;
-} )();
 
-Isotope.sortDataParsers = {
-  parseInt: function( val ) {
-    return parseInt( val, 10 );
-  },
-  parseFloat: function( val ) {
-    return parseFloat( val );
-  }
-};
-
-proto._sort = function() {
-  if ( !this.options.sortBy ) return;
-  let sortBys = utils.makeArray( this.options.sortBy );
-  if ( !this._getIsSameSortBy( sortBys ) ) {
-    this.sortHistory = sortBys.concat( this.sortHistory );
-  }
-  let itemSorter = getItemSorter( this.sortHistory, this.options.sortAscending );
-  this.filteredItems.sort( itemSorter );
-};
-
-proto._getIsSameSortBy = function( sortBys ) {
-  for ( let i = 0; i < sortBys.length; i++ ) {
-    if ( sortBys[i] !== this.sortHistory[i] ) return false;
-  }
-  return true;
-};
-
-function getItemSorter( sortBys, sortAsc ) {
-  return function( itemA, itemB ) {
-    for ( let i = 0; i < sortBys.length; i++ ) {
-      let sortBy = sortBys[i];
-      let a = itemA.sortData[ sortBy ];
-      let b = itemB.sortData[ sortBy ];
-      if ( a > b || a < b ) {
-        let isAscending = sortAsc[ sortBy ] !== undefined ? sortAsc[ sortBy ] : sortAsc;
-        let direction = isAscending ? 1 : -1;
-        return ( a > b ? 1 : -1 ) * direction;
-      }
-    }
-    return 0;
-  };
-}
-
-proto._mode = function() {
+ proto._mode = function() {
+  // Garantir que this.modes exista antes de usar
   if (!this.modes) {
+    console.warn('this.modes não está definido ainda. Inicializando como objeto vazio.');
     this.modes = {};
   }
 
   let layoutMode = this.options.layoutMode;
+  console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
 
   let mode = this.modes[ layoutMode ];
   if ( !mode ) {
+    console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
     this._initLayoutMode( layoutMode );
     mode = this.modes[ layoutMode ];
     if ( !mode ) {
@@ -903,108 +923,106 @@ proto._mode = function() {
   return mode;
 };
 
-proto._resetLayout = function() {
-  Outlayer.prototype._resetLayout.call( this );
-  this._mode()._resetLayout();
-};
 
-proto._getItemLayoutPosition = function( item ) {
-  return this._mode()._getItemLayoutPosition( item );
-};
+  proto._resetLayout = function() {
+    Outlayer.prototype._resetLayout.call( this );
+    this._mode()._resetLayout();
+  };
 
-proto._manageStamp = function( stamp ) {
-  if ( this._mode()._manageStamp ) {
+  proto._getItemLayoutPosition = function( item ) {
+    return this._mode()._getItemLayoutPosition( item );
+  };
+
+  proto._manageStamp = function( stamp ) {
     this._mode()._manageStamp( stamp );
-  }
-};
+  };
 
-proto._getContainerSize = function() {
-  return this._mode()._getContainerSize();
-};
+  proto._getContainerSize = function() {
+    return this._mode()._getContainerSize();
+  };
 
-proto.needsResizeLayout = function() {
-  if ( this._mode().needsResizeLayout ) {
+  proto.needsResizeLayout = function() {
     return this._mode().needsResizeLayout();
-  }
-  return false;
-};
+  };
 
-proto.appended = function( elems ) {
-  let items = this.addItems( elems );
-  if ( !items.length ) return;
-  let filteredItems = this._filterRevealAdded( items );
-  this.filteredItems = this.filteredItems.concat( filteredItems );
-};
+  proto.appended = function( elems ) {
+    let items = this.addItems( elems );
+    if ( !items.length ) return;
+    let filteredItems = this._filterRevealAdded( items );
+    this.filteredItems = this.filteredItems.concat( filteredItems );
+  };
 
-proto.prepended = function( elems ) {
-  let items = this._itemize( elems );
-  if ( !items.length ) return;
-  this._resetLayout();
-  this._manageStamps();
-  let filteredItems = this._filterRevealAdded( items );
-  this.layoutItems( this.filteredItems );
-  this.filteredItems = filteredItems.concat( this.filteredItems );
-  this.items = items.concat( this.items );
-};
+  proto.prepended = function( elems ) {
+    let items = this._itemize( elems );
+    if ( !items.length ) return;
+    this._resetLayout();
+    this._manageStamps();
+    let filteredItems = this._filterRevealAdded( items );
+    this.layoutItems( this.filteredItems );
+    this.filteredItems = filteredItems.concat( this.filteredItems );
+    this.items = items.concat( this.items );
+  };
 
-proto._filterRevealAdded = function( items ) {
-  let filtered = this._filter( items );
-  this.hide( filtered.needHide );
-  this.reveal( filtered.matches );
-  this.layoutItems( filtered.matches, true );
-  return filtered.matches;
-};
+  proto._filterRevealAdded = function( items ) {
+    let filtered = this._filter( items );
+    this.hide( filtered.needHide );
+    this.reveal( filtered.matches );
+    this.layoutItems( filtered.matches, true );
+    return filtered.matches;
+  };
 
-proto.insert = function( elems ) {
-  let items = this.addItems( elems );
-  if ( !items.length ) return;
-  for ( let i = 0; i < items.length; i++ ) {
-    this.element.appendChild( items[i].element );
-  }
-  let filteredInsertItems = this._filter( items ).matches;
-  for ( let i = 0; i < items.length; i++ ) {
-    items[i].isLayoutInstant = true;
-  }
-  this.arrange();
-  for ( let i = 0; i < items.length; i++ ) {
-    delete items[i].isLayoutInstant;
-  }
-  this.reveal( filteredInsertItems );
-};
+  proto.insert = function( elems ) {
+    let items = this.addItems( elems );
+    if ( !items.length ) return;
+    for ( let i = 0; i < items.length; i++ ) {
+      this.element.appendChild( items[i].element );
+    }
+    let filteredInsertItems = this._filter( items ).matches;
+    for ( let i = 0; i < items.length; i++ ) {
+      items[i].isLayoutInstant = true;
+    }
+    this.arrange();
+    for ( let i = 0; i < items.length; i++ ) {
+      delete items[i].isLayoutInstant;
+    }
+    this.reveal( filteredInsertItems );
+  };
 
-let _remove = proto.remove;
-proto.remove = function( elems ) {
-  elems = utils.makeArray( elems );
-  let removeItems = this.getItems( elems );
-  _remove.call( this, elems );
-  let len = removeItems && removeItems.length;
-  for ( let i = 0; len && i < len; i++ ) {
-    utils.removeFrom( this.filteredItems, removeItems[i] );
-  }
-};
+  let _remove = proto.remove;
+  proto.remove = function( elems ) {
+    elems = utils.makeArray( elems );
+    let removeItems = this.getItems( elems );
+    _remove.call( this, elems );
+    let len = removeItems && removeItems.length;
+    for ( let i = 0; len && i < len; i++ ) {
+      utils.removeFrom( this.filteredItems, removeItems[i] );
+    }
+  };
 
-proto.shuffle = function() {
-  for ( let i = 0; i < this.items.length; i++ ) {
-    this.items[i].sortData.random = Math.random();
-  }
-  this.options.sortBy = 'random';
-  this._sort();
-  this._layout();
-};
+  proto.shuffle = function() {
+    for ( let i = 0; i < this.items.length; i++ ) {
+      this.items[i].sortData.random = Math.random();
+    }
+    this.options.sortBy = 'random';
+    this._sort();
+    this._layout();
+  };
 
-proto._noTransition = function( fn, args ) {
-  let transitionDuration = this._getOption( 'transitionDuration' );
-  this.options.transitionDuration = 0;
-  let returnValue = fn.apply( this, args );
-  this.options.transitionDuration = transitionDuration;
-  return returnValue;
-};
+  proto._noTransition = function( fn, args ) {
+    let transitionDuration = this._getOption( 'transitionDuration' );
+    this.options.transitionDuration = 0;
+    let returnValue = fn.apply( this, args );
+    this.options.transitionDuration = transitionDuration;
+    return returnValue;
+  };
 
-proto.getFilteredItemElements = function() {
-  return this.filteredItems.map( function( item ) {
-    return item.element;
-  } );
-};
+  proto.getFilteredItemElements = function() {
+    return this.filteredItems.map( function( item ) {
+      return item.element;
+    } );
+  };
 
-console.log('grid.js carregado completamente'); // fim parte 10 e fim do código
+  return Isotope;
+}));
+console.log('grid.js carregado completamente');
 
