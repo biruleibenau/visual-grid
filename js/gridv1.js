@@ -403,7 +403,8 @@ LayoutMode.create = function( namespace, options ) {
  * Modo de layout Masonry
  */
  
- const MasonryMode = LayoutMode.create('masonry');
+ const MasonryMode = Outlayer.create('masonry', { gutter: 10 });
+
  let masonryProto = MasonryMode.prototype;
 
 masonryProto._resetLayout = function() {
@@ -537,8 +538,11 @@ masonryProto._getOption = function(option) {
 /**
  * Modo de layout FitRows
  */
-const FitRows = LayoutMode.create('fitRows');
-const fitRowsProto = FitRows.prototype;
+const FitRowsMode = Outlayer.create('fitRows', {
+  gutter: 10
+});
+let fitRowsProto = FitRowsMode.prototype;
+
 
 fitRowsProto._resetLayout = function() {
   this.x = 0;
