@@ -88,7 +88,7 @@
       if ( index !== -1 ) arr.splice( index, 1 );
     }
   };
-  console.log('Utils definido'); // Movido para fora
+  console.log('Utils definido'); // fim parte 2
   
   // -------------------------- Get Size -------------------------- //
   /**
@@ -128,7 +128,7 @@
     }
     return getSize;
   } )();
-  console.log('GetSize definido'); // Movido para fora
+  console.log('GetSize definido'); // fim parte 3
 
   // -------------------------- Matches Selector -------------------------- //
   /**
@@ -156,7 +156,7 @@
       return false;
     };
   } )();
-console.log('MatchesSelector definido'); // Movido para fora
+console.log('MatchesSelector definido'); // parte 4 M
   // -------------------------- Outlayer -------------------------- //
   /**
    * Classe base para layouts (Outlayer)
@@ -329,7 +329,9 @@ console.log('MatchesSelector definido'); // Movido para fora
     Class.prototype.constructor = Class;
     Class.namespace = namespace;
     return Class;
-  };
+  }; 
+  
+  //// parte 5 fim
 
   // -------------------------- Outlayer Item -------------------------- //
   /**
@@ -371,7 +373,7 @@ console.log('MatchesSelector definido'); // Movido para fora
   getSize: !!getSize,
   matchesSelector: !!matchesSelector,
   Outlayer: !!Outlayer
-});
+}); // fim parte 6
 
   // -------------------------- Layout Mode -------------------------- //
   /**
@@ -555,7 +557,7 @@ MasonryMode.prototype._getOption = function( option ) {
   }
   return this.isotope._getOption( option );
 };
-  
+  //// fim parte 8
 // -------------------------- FitRows -------------------------- //
 /**
  * Modo de layout FitRows
@@ -589,170 +591,165 @@ proto._getItemLayoutPosition = function( item ) {
 proto._getContainerSize = function() {
   return { height: this.maxY };
 };
-
+/// fim parte 9
   // -------------------------- Isotope Item -------------------------- //
-  /**
-   * Item individual do Isotope
-   */
-  function Item( element, isotope ) {
-    Outlayer.Item.call( this, element, isotope );
-    this.sortData = {};
+/**
+ * Item individual do Isotope
+ */
+function Item( element, isotope ) {
+  Outlayer.Item.call( this, element, isotope );
+  this.sortData = {};
+}
+
+Item.prototype = Object.create( Outlayer.Item.prototype );
+Item.prototype.constructor = Item;
+
+let proto = Item.prototype;
+
+proto.updateSortData = function() {
+  if ( this.isIgnored ) return;
+  this.sortData.id = this.id;
+  this.sortData[ 'original-order' ] = this.id;
+  let getSortData = this.outlayer.options.getSortData;
+  for ( let key in getSortData ) {
+    let sorter = this.outlayer._sorters[ key ];
+    this.sortData[ key ] = sorter( this.element, this );
   }
+};
 
-  Item.prototype = Object.create( Outlayer.Item.prototype );
-  Item.prototype.constructor = Item;
+// -------------------------- Isotope -------------------------- //
+/**
+ * Classe principal do Isotope
+ */
+let Isotope = Outlayer.create( 'isotope', {
+  layoutMode: 'masonry',
+  sortAscending: true,
+  isJQueryFiltering: true
+});
 
-  proto = Item.prototype;
+Isotope.Item = Item;
+Isotope.LayoutMode = LayoutMode;
 
-  proto.updateSortData = function() {
-    if ( this.isIgnored ) return;
-    this.sortData.id = this.id;
-    this.sortData[ 'original-order' ] = this.id;
-    let getSortData = this.outlayer.options.getSortData;
-    for ( let key in getSortData ) {
-      let sorter = this.outlayer._sorters[ key ];
-      this.sortData[ key ] = sorter( this.element, this );
-    }
-  };
+proto = Isotope.prototype;
 
-  // -------------------------- Isotope -------------------------- //
-  /**
-   * Classe principal do Isotope
-   */
-  let Isotope = Outlayer.create( 'isotope', {
-    layoutMode: 'masonry',
-    sortAscending: true,
-    isJQueryFiltering: true
-  });
-
-  Isotope.Item = Item;
-  Isotope.LayoutMode = LayoutMode;
-
-  proto = Isotope.prototype;
-  proto._create = function() {
-  console.log('Iniciando _create');
+proto._create = function() {
   this.itemGUID = 0;
   this._sorters = {};
   this._getSorters();
-  console.log('Após getSorters');
   Outlayer.prototype._create.call( this );
-  console.log('Após Outlayer._create');
   this.modes = {};
   this.filteredItems = this.items;
   this.sortHistory = [ 'original-order' ];
-  console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
+
+  // Inicializa todos os modos de layout já registrados
   for ( let name in LayoutMode.modes ) {
-    console.log('Registrando modo:', name);
     this._initLayoutMode( name );
   }
-  console.log('Modos registrados:', Object.keys(this.modes));
+
+  // Garante que o modo masonry exista (importante para seu erro)
   if (!this.modes.masonry) {
-    console.error('Modo masonry não registrado! Tentando corrigir...');
     this._initLayoutMode('masonry');
   }
-  console.log('Finalizando _create');
 };
-  
-  proto.reloadItems = function() {
-    this.itemGUID = 0;
-    Outlayer.prototype.reloadItems.call( this );
-  };
 
-  proto._itemize = function() {
-    let items = Outlayer.prototype._itemize.apply( this, arguments );
-    for ( let i = 0; i < items.length; i++ ) {
-      let item = items[i];
-      item.id = this.itemGUID++;
-    }
-    this._updateItemsSortData( items );
-    return items;
-  };
+proto.reloadItems = function() {
+  this.itemGUID = 0;
+  Outlayer.prototype.reloadItems.call( this );
+};
 
-  proto._initLayoutMode = function( name ) {
-  console.log('Inicializando modo:', name);
+proto._itemize = function() {
+  let items = Outlayer.prototype._itemize.apply( this, arguments );
+  for ( let i = 0; i < items.length; i++ ) {
+    let item = items[i];
+    item.id = this.itemGUID++;
+  }
+  this._updateItemsSortData( items );
+  return items;
+};
+
+proto._initLayoutMode = function( name ) {
   let Mode = LayoutMode.modes[ name ];
   if (!Mode) {
     console.error('Modo não encontrado:', name);
     return;
   }
-  console.log('Modo encontrado:', !!Mode, 'Namespace:', Mode.namespace);
   let initialOpts = this.options[ name ] || {};
-  console.log('Opções iniciais para', name, ':', initialOpts);
   this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
   try {
     this.modes[ name ] = new Mode( this );
-    console.log('Modo registrado com sucesso:', name, !!this.modes[ name ]);
   } catch (error) {
     console.error('Erro ao criar instância do modo:', name, error);
   }
 };
-  
-  proto.layout = function() {
-    if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
-      this.arrange();
-      return;
+
+proto.layout = function() {
+  if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
+    this.arrange();
+    return;
+  }
+  this._layout();
+};
+
+proto._layout = function() {
+  let isInstant = this._getIsInstant();
+  this._resetLayout();
+  this._manageStamps();
+  this.layoutItems( this.filteredItems, isInstant );
+  this._isLayoutInited = true;
+};
+
+proto.arrange = function( opts ) {
+  this.option( opts );
+  this._getIsInstant();
+  let filtered = this._filter( this.items );
+  this.filteredItems = filtered.matches;
+  this._bindArrangeComplete();
+
+  if ( this._isInstant ) {
+    this._noTransition( this._hideReveal, [ filtered ] );
+  } else {
+    this._hideReveal( filtered );
+  }
+
+  this._sort();
+  this._layout();
+};
+
+proto._init = proto.arrange;
+
+proto._hideReveal = function( filtered ) {
+  this.reveal( filtered.needReveal );
+  this.hide( filtered.needHide );
+};
+
+proto._getIsInstant = function() {
+  let isLayoutInstant = this._getOption( 'layoutInstant' );
+  let isInstant = isLayoutInstant !== undefined ? isLayoutInstant : !this._isLayoutInited;
+  this._isInstant = isInstant;
+  return isInstant;
+};
+
+proto._bindArrangeComplete = function() {
+  let isLayoutComplete, isHideComplete, isRevealComplete;
+  let _this = this;
+  function arrangeParallelCallback() {
+    if ( isLayoutComplete && isHideComplete && isRevealComplete ) {
+      _this.dispatchEvent( 'arrangeComplete', null, [ _this.filteredItems ] );
     }
-    this._layout();
-  };
-
-  proto._layout = function() {
-    let isInstant = this._getIsInstant();
-    this._resetLayout();
-    this._manageStamps();
-    this.layoutItems( this.filteredItems, isInstant );
-    this._isLayoutInited = true;
-  };
-
-  proto.arrange = function( opts ) {
-    this.option( opts );
-    this._getIsInstant();
-    let filtered = this._filter( this.items );
-    this.filteredItems = filtered.matches;
-    this._bindArrangeComplete();
-    if ( this._isInstant ) {
-      this._noTransition( this._hideReveal, [ filtered ] );
-    } else {
-      this._hideReveal( filtered );
-    }
-    this._sort();
-    this._layout();
-  };
-
-  proto._init = proto.arrange;
-
-  proto._hideReveal = function( filtered ) {
-    this.reveal( filtered.needReveal );
-    this.hide( filtered.needHide );
-  };
-
-  proto._getIsInstant = function() {
-    let isLayoutInstant = this._getOption( 'layoutInstant' );
-    let isInstant = isLayoutInstant !== undefined ? isLayoutInstant : !this._isLayoutInited;
-    this._isInstant = isInstant;
-    return isInstant;
-  };
-
-  proto._bindArrangeComplete = function() {
-    let isLayoutComplete, isHideComplete, isRevealComplete;
-    let _this = this;
-    function arrangeParallelCallback() {
-      if ( isLayoutComplete && isHideComplete && isRevealComplete ) {
-        _this.dispatchEvent( 'arrangeComplete', null, [ _this.filteredItems ] );
-      }
-    }
-    this.once( 'layoutComplete', function() {
-      isLayoutComplete = true;
-      arrangeParallelCallback();
-    });
-    this.once( 'hideComplete', function() {
-      isHideComplete = true;
-      arrangeParallelCallback();
-    });
-    this.once( 'revealComplete', function() {
-      isRevealComplete = true;
-      arrangeParallelCallback();
-    });
-  };
+  }
+  this.once( 'layoutComplete', function() {
+    isLayoutComplete = true;
+    arrangeParallelCallback();
+  });
+  this.once( 'hideComplete', function() {
+    isHideComplete = true;
+    arrangeParallelCallback();
+  });
+  this.once( 'revealComplete', function() {
+    isRevealComplete = true;
+    arrangeParallelCallback();
+  });
+};
 
 proto._filter = function( items ) {
   let filter = this.options.filter || '*';
@@ -760,25 +757,18 @@ proto._filter = function( items ) {
   let hiddenMatched = [];
   let visibleUnmatched = [];
   let test = this._getFilterTest( filter );
-  console.log('Filtrando com:', filter, 'Total de itens:', items.length);
+
   for ( let i = 0; i < items.length; i++ ) {
     let item = items[i];
     if ( item.isIgnored ) {
-      console.log('Item ignorado:', item.element.className);
       continue;
     }
     let isMatched = test( item );
-    console.log('Item:', item.element.className, 'isMatched:', isMatched, 'isHidden:', item.isHidden);
     if ( isMatched ) matches.push( item );
     if ( isMatched && item.isHidden ) hiddenMatched.push( item );
     else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
   }
-  console.log('Resultado do filtro:', {
-    matches: matches.length,
-    needReveal: hiddenMatched.length,
-    needHide: visibleUnmatched.length,
-    matchedClasses: matches.map(item => item.element.className)
-  });
+
   return {
     matches: matches,
     needReveal: hiddenMatched,
@@ -787,138 +777,121 @@ proto._filter = function( items ) {
 };
 
 proto._getFilterTest = function( filter ) {
-  console.log('Criando teste de filtro para:', filter);
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
-    console.log('Usando jQuery para filtro');
     return function( item ) {
-      console.log('Testando item:', item.element.className, 'Seletor:', filter);
       let $elem = jQuery( item.element );
-      let result = $elem.is( filter );
-      console.log('jQuery.is(', filter, ') para', item.element.className, ':', result);
-      let manualResult = item.element.classList.contains( filter.replace('.', '') );
-      console.log('Manual check para', filter, 'em', item.element.className, ':', manualResult);
-      // Log adicional para classes do elemento
-      console.log('Classes do elemento:', item.element.className.split(' '));
-      return result;
+      return $elem.is( filter );
     };
   }
   if ( typeof filter === 'function' ) {
-    console.log('Usando função personalizada para filtro');
     return function( item ) {
       return filter( item.element );
     };
   }
-  console.log('Usando matchesSelector para filtro');
   return function( item ) {
-    let result = matchesSelector( item.element, filter );
-    console.log('matchesSelector(', filter, ') para', item.element.className, ':', result);
-    return result;
+    return matchesSelector( item.element, filter );
   };
 };
 
-  proto.updateSortData = function( elems ) {
-    let items = elems ? this.getItems( utils.makeArray( elems ) ) : this.items;
-    this._getSorters();
-    this._updateItemsSortData( items );
-  };
+proto.updateSortData = function( elems ) {
+  let items = elems ? this.getItems( utils.makeArray( elems ) ) : this.items;
+  this._getSorters();
+  this._updateItemsSortData( items );
+};
 
-  proto._getSorters = function() {
-    let getSortData = this.options.getSortData;
-    for ( let key in getSortData ) {
-      this._sorters[ key ] = mungeSorter( getSortData[ key ] );
-    }
-  };
+proto._getSorters = function() {
+  let getSortData = this.options.getSortData;
+  for ( let key in getSortData ) {
+    this._sorters[ key ] = mungeSorter( getSortData[ key ] );
+  }
+};
 
-  proto._updateItemsSortData = function( items ) {
-    for ( let i = 0; i < items.length; i++ ) {
-      items[i].updateSortData();
-    }
-  };
+proto._updateItemsSortData = function( items ) {
+  for ( let i = 0; i < items.length; i++ ) {
+    items[i].updateSortData();
+  }
+};
 
-  const mungeSorter = ( function() {
-    function mungeSorter( sorter ) {
-      if ( typeof sorter !== 'string' ) return sorter;
-      let args = sorter.trim().split( ' ' );
-      let query = args[0];
-      let attrMatch = query.match( /^\[(.+)\]$/ );
-      let attr = attrMatch && attrMatch[1];
-      let getValue = getValueGetter( attr, query );
-      let parser = Isotope.sortDataParsers[ args[1] ];
-      return parser ? function( elem ) {
-        return elem && parser( getValue( elem ) );
-      } : function( elem ) {
-        return elem && getValue( elem );
-      };
-    }
-    function getValueGetter( attr, query ) {
-      if ( attr ) {
-        return function( elem ) {
-          return elem.getAttribute( attr );
-        };
-      }
-      return function( elem ) {
-        let child = elem.querySelector( query );
-        return child && child.textContent;
-      };
-    }
-    return mungeSorter;
-  } )();
-
-  Isotope.sortDataParsers = {
-    parseInt: function( val ) {
-      return parseInt( val, 10 );
-    },
-    parseFloat: function( val ) {
-      return parseFloat( val );
-    }
-  };
-
-  proto._sort = function() {
-    if ( !this.options.sortBy ) return;
-    let sortBys = utils.makeArray( this.options.sortBy );
-    if ( !this._getIsSameSortBy( sortBys ) ) {
-      this.sortHistory = sortBys.concat( this.sortHistory );
-    }
-    let itemSorter = getItemSorter( this.sortHistory, this.options.sortAscending );
-    this.filteredItems.sort( itemSorter );
-  };
-
-  proto._getIsSameSortBy = function( sortBys ) {
-    for ( let i = 0; i < sortBys.length; i++ ) {
-      if ( sortBys[i] !== this.sortHistory[i] ) return false;
-    }
-    return true;
-  };
-
-  function getItemSorter( sortBys, sortAsc ) {
-    return function( itemA, itemB ) {
-      for ( let i = 0; i < sortBys.length; i++ ) {
-        let sortBy = sortBys[i];
-        let a = itemA.sortData[ sortBy ];
-        let b = itemB.sortData[ sortBy ];
-        if ( a > b || a < b ) {
-          let isAscending = sortAsc[ sortBy ] !== undefined ? sortAsc[ sortBy ] : sortAsc;
-          let direction = isAscending ? 1 : -1;
-          return ( a > b ? 1 : -1 ) * direction;
-        }
-      }
-      return 0;
+const mungeSorter = ( function() {
+  function mungeSorter( sorter ) {
+    if ( typeof sorter !== 'string' ) return sorter;
+    let args = sorter.trim().split( ' ' );
+    let query = args[0];
+    let attrMatch = query.match( /^\[(.+)\]$/ );
+    let attr = attrMatch && attrMatch[1];
+    let getValue = getValueGetter( attr, query );
+    let parser = Isotope.sortDataParsers[ args[1] ];
+    return parser ? function( elem ) {
+      return elem && parser( getValue( elem ) );
+    } : function( elem ) {
+      return elem && getValue( elem );
     };
   }
+  function getValueGetter( attr, query ) {
+    if ( attr ) {
+      return function( elem ) {
+        return elem.getAttribute( attr );
+      };
+    }
+    return function( elem ) {
+      let child = elem.querySelector( query );
+      return child && child.textContent;
+    };
+  }
+  return mungeSorter;
+} )();
 
- proto._mode = function() {
-  // Garantir que this.modes exista antes de usar
+Isotope.sortDataParsers = {
+  parseInt: function( val ) {
+    return parseInt( val, 10 );
+  },
+  parseFloat: function( val ) {
+    return parseFloat( val );
+  }
+};
+
+proto._sort = function() {
+  if ( !this.options.sortBy ) return;
+  let sortBys = utils.makeArray( this.options.sortBy );
+  if ( !this._getIsSameSortBy( sortBys ) ) {
+    this.sortHistory = sortBys.concat( this.sortHistory );
+  }
+  let itemSorter = getItemSorter( this.sortHistory, this.options.sortAscending );
+  this.filteredItems.sort( itemSorter );
+};
+
+proto._getIsSameSortBy = function( sortBys ) {
+  for ( let i = 0; i < sortBys.length; i++ ) {
+    if ( sortBys[i] !== this.sortHistory[i] ) return false;
+  }
+  return true;
+};
+
+function getItemSorter( sortBys, sortAsc ) {
+  return function( itemA, itemB ) {
+    for ( let i = 0; i < sortBys.length; i++ ) {
+      let sortBy = sortBys[i];
+      let a = itemA.sortData[ sortBy ];
+      let b = itemB.sortData[ sortBy ];
+      if ( a > b || a < b ) {
+        let isAscending = sortAsc[ sortBy ] !== undefined ? sortAsc[ sortBy ] : sortAsc;
+        let direction = isAscending ? 1 : -1;
+        return ( a > b ? 1 : -1 ) * direction;
+      }
+    }
+    return 0;
+  };
+}
+
+proto._mode = function() {
   if (!this.modes) {
-    console.warn('this.modes não está definido ainda. Inicializando como objeto vazio.');
     this.modes = {};
   }
 
   let layoutMode = this.options.layoutMode;
-  console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
 
   let mode = this.modes[ layoutMode ];
   if ( !mode ) {
-    console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
     this._initLayoutMode( layoutMode );
     mode = this.modes[ layoutMode ];
     if ( !mode ) {
@@ -930,105 +903,108 @@ proto._getFilterTest = function( filter ) {
   return mode;
 };
 
+proto._resetLayout = function() {
+  Outlayer.prototype._resetLayout.call( this );
+  this._mode()._resetLayout();
+};
 
-  proto._resetLayout = function() {
-    Outlayer.prototype._resetLayout.call( this );
-    this._mode()._resetLayout();
-  };
+proto._getItemLayoutPosition = function( item ) {
+  return this._mode()._getItemLayoutPosition( item );
+};
 
-  proto._getItemLayoutPosition = function( item ) {
-    return this._mode()._getItemLayoutPosition( item );
-  };
-
-  proto._manageStamp = function( stamp ) {
+proto._manageStamp = function( stamp ) {
+  if ( this._mode()._manageStamp ) {
     this._mode()._manageStamp( stamp );
-  };
+  }
+};
 
-  proto._getContainerSize = function() {
-    return this._mode()._getContainerSize();
-  };
+proto._getContainerSize = function() {
+  return this._mode()._getContainerSize();
+};
 
-  proto.needsResizeLayout = function() {
+proto.needsResizeLayout = function() {
+  if ( this._mode().needsResizeLayout ) {
     return this._mode().needsResizeLayout();
-  };
+  }
+  return false;
+};
 
-  proto.appended = function( elems ) {
-    let items = this.addItems( elems );
-    if ( !items.length ) return;
-    let filteredItems = this._filterRevealAdded( items );
-    this.filteredItems = this.filteredItems.concat( filteredItems );
-  };
+proto.appended = function( elems ) {
+  let items = this.addItems( elems );
+  if ( !items.length ) return;
+  let filteredItems = this._filterRevealAdded( items );
+  this.filteredItems = this.filteredItems.concat( filteredItems );
+};
 
-  proto.prepended = function( elems ) {
-    let items = this._itemize( elems );
-    if ( !items.length ) return;
-    this._resetLayout();
-    this._manageStamps();
-    let filteredItems = this._filterRevealAdded( items );
-    this.layoutItems( this.filteredItems );
-    this.filteredItems = filteredItems.concat( this.filteredItems );
-    this.items = items.concat( this.items );
-  };
+proto.prepended = function( elems ) {
+  let items = this._itemize( elems );
+  if ( !items.length ) return;
+  this._resetLayout();
+  this._manageStamps();
+  let filteredItems = this._filterRevealAdded( items );
+  this.layoutItems( this.filteredItems );
+  this.filteredItems = filteredItems.concat( this.filteredItems );
+  this.items = items.concat( this.items );
+};
 
-  proto._filterRevealAdded = function( items ) {
-    let filtered = this._filter( items );
-    this.hide( filtered.needHide );
-    this.reveal( filtered.matches );
-    this.layoutItems( filtered.matches, true );
-    return filtered.matches;
-  };
+proto._filterRevealAdded = function( items ) {
+  let filtered = this._filter( items );
+  this.hide( filtered.needHide );
+  this.reveal( filtered.matches );
+  this.layoutItems( filtered.matches, true );
+  return filtered.matches;
+};
 
-  proto.insert = function( elems ) {
-    let items = this.addItems( elems );
-    if ( !items.length ) return;
-    for ( let i = 0; i < items.length; i++ ) {
-      this.element.appendChild( items[i].element );
-    }
-    let filteredInsertItems = this._filter( items ).matches;
-    for ( let i = 0; i < items.length; i++ ) {
-      items[i].isLayoutInstant = true;
-    }
-    this.arrange();
-    for ( let i = 0; i < items.length; i++ ) {
-      delete items[i].isLayoutInstant;
-    }
-    this.reveal( filteredInsertItems );
-  };
+proto.insert = function( elems ) {
+  let items = this.addItems( elems );
+  if ( !items.length ) return;
+  for ( let i = 0; i < items.length; i++ ) {
+    this.element.appendChild( items[i].element );
+  }
+  let filteredInsertItems = this._filter( items ).matches;
+  for ( let i = 0; i < items.length; i++ ) {
+    items[i].isLayoutInstant = true;
+  }
+  this.arrange();
+  for ( let i = 0; i < items.length; i++ ) {
+    delete items[i].isLayoutInstant;
+  }
+  this.reveal( filteredInsertItems );
+};
 
-  let _remove = proto.remove;
-  proto.remove = function( elems ) {
-    elems = utils.makeArray( elems );
-    let removeItems = this.getItems( elems );
-    _remove.call( this, elems );
-    let len = removeItems && removeItems.length;
-    for ( let i = 0; len && i < len; i++ ) {
-      utils.removeFrom( this.filteredItems, removeItems[i] );
-    }
-  };
+let _remove = proto.remove;
+proto.remove = function( elems ) {
+  elems = utils.makeArray( elems );
+  let removeItems = this.getItems( elems );
+  _remove.call( this, elems );
+  let len = removeItems && removeItems.length;
+  for ( let i = 0; len && i < len; i++ ) {
+    utils.removeFrom( this.filteredItems, removeItems[i] );
+  }
+};
 
-  proto.shuffle = function() {
-    for ( let i = 0; i < this.items.length; i++ ) {
-      this.items[i].sortData.random = Math.random();
-    }
-    this.options.sortBy = 'random';
-    this._sort();
-    this._layout();
-  };
+proto.shuffle = function() {
+  for ( let i = 0; i < this.items.length; i++ ) {
+    this.items[i].sortData.random = Math.random();
+  }
+  this.options.sortBy = 'random';
+  this._sort();
+  this._layout();
+};
 
-  proto._noTransition = function( fn, args ) {
-    let transitionDuration = this._getOption( 'transitionDuration' );
-    this.options.transitionDuration = 0;
-    let returnValue = fn.apply( this, args );
-    this.options.transitionDuration = transitionDuration;
-    return returnValue;
-  };
+proto._noTransition = function( fn, args ) {
+  let transitionDuration = this._getOption( 'transitionDuration' );
+  this.options.transitionDuration = 0;
+  let returnValue = fn.apply( this, args );
+  this.options.transitionDuration = transitionDuration;
+  return returnValue;
+};
 
-  proto.getFilteredItemElements = function() {
-    return this.filteredItems.map( function( item ) {
-      return item.element;
-    } );
-  };
+proto.getFilteredItemElements = function() {
+  return this.filteredItems.map( function( item ) {
+    return item.element;
+  } );
+};
 
-  return Isotope;
-}));
-console.log('grid.js carregado completamente');
+console.log('grid.js carregado completamente'); // fim parte 10 e fim do código
+
