@@ -401,135 +401,49 @@ LayoutMode.prototype.getSize = function() {
 /**
  * Modo de layout Masonry
  */
-let MasonryMode = LayoutMode.create( 'masonry' );
-console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-MasonryMode.prototype._resetLayout = function() {
-  this.getSize();
-  this._getMeasurement('columnWidth', 'outerWidth');
-  this._getMeasurement('gutter', 'outerWidth');
-  this.measureColumns();
-  this.colYs = Array(this.cols).fill(0);
-  this.maxY = 0;
-  this.horizontalColIndex = 0;
-};
+// -------------------------- masonryDefinition -------------------------- //
 
-MasonryMode.prototype.measureColumns = function() {
-  this.getContainerWidth();
-  if (!this.columnWidth) {
-    let firstItem = this.isotope.items[0];
-    let firstItemElem = firstItem && firstItem.element;
-    this.columnWidth = (firstItemElem && getSize(firstItemElem).outerWidth) || this.containerWidth;
+  // create an Outlayer layout class
+  var MasonryMode = LayoutMode.create('masonry');
+  console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
+
+
+  var proto = MasonryMode.prototype;
+
+  var keepModeMethods = {
+    _getElementOffset: true,
+    layout: true,
+    _getMeasurement: true
+  };
+
+  // inherit Masonry prototype
+  for ( var method in Masonry.prototype ) {
+    // do not inherit mode methods
+    if ( !keepModeMethods[ method ] ) {
+      proto[ method ] = Masonry.prototype[ method ];
+    }
   }
-  this.columnWidth += this.gutter;
-  let containerWidth = this.containerWidth + this.gutter;
-  let cols = containerWidth / this.columnWidth;
-  let excess = this.columnWidth - (containerWidth % this.columnWidth);
-  let mathMethod = excess && excess < 1 ? 'round' : 'floor';
-  cols = Math[mathMethod](cols);
-  this.cols = Math.max(cols, 1);
-};
 
-MasonryMode.prototype.getContainerWidth = function() {
-  let isFitWidth = this.isotope._getOption('fitWidth');
-  let container = isFitWidth ? this.element.parentNode : this.element;
-  let size = getSize(container);
-  this.containerWidth = size && size.innerWidth;
-};
+  var measureColumns = proto.measureColumns;
+  proto.measureColumns = function() {
+    // set items, used if measuring first item
+    this.items = this.isotope.filteredItems;
+    measureColumns.call( this );
+  };
 
-MasonryMode.prototype._getItemLayoutPosition = function(item) {
-  item.getSize();
-  let remainder = item.size.outerWidth % this.columnWidth;
-  let mathMethod = remainder && remainder < 1 ? 'round' : 'ceil';
-  let colSpan = Math[mathMethod](item.size.outerWidth / this.columnWidth);
-  colSpan = Math.min(colSpan, this.cols);
-  let colPosMethod = this.options.horizontalOrder ? '_getHorizontalColPosition' : '_getTopColPosition';
-  let colPosition = this[colPosMethod](colSpan, item);
-  let position = { x: this.columnWidth * colPosition.col, y: colPosition.y };
-  let setHeight = colPosition.y + item.size.outerHeight;
-  for (let i = colPosition.col; i < colPosition.col + colSpan; i++) {
-    this.colYs[i] = setHeight;
-  }
-  return position;
-};
+  // point to mode options for fitWidth
+  var _getOption = proto._getOption;
+  proto._getOption = function( option ) {
+    if ( option == 'fitWidth' ) {
+      return this.options.isFitWidth !== undefined ?
+        this.options.isFitWidth : this.options.fitWidth;
+    }
+    return _getOption.apply( this.isotope, arguments );
+  };
 
-MasonryMode.prototype._getTopColPosition = function(colSpan) {
-  let colGroup = this._getTopColGroup(colSpan);
-  let minY = Math.min(...colGroup);
-  return { col: colGroup.indexOf(minY), y: minY };
-};
-
-MasonryMode.prototype._getTopColGroup = function(colSpan) {
-  if (colSpan < 2) return this.colYs;
-  let colGroup = [];
-  for (let i = 0; i <= this.cols - colSpan; i++) {
-    colGroup[i] = this._getColGroupY(i, colSpan);
-  }
-  return colGroup;
-};
-
-MasonryMode.prototype._getColGroupY = function(col, colSpan) {
-  return colSpan < 2 ? this.colYs[col] : Math.max(...this.colYs.slice(col, col + colSpan));
-};
-
-MasonryMode.prototype._getHorizontalColPosition = function(colSpan, item) {
-  let col = this.horizontalColIndex % this.cols;
-  if (colSpan > 1 && col + colSpan > this.cols) col = 0;
-  if (item.size.outerWidth && item.size.outerHeight) {
-    this.horizontalColIndex = col + colSpan;
-  }
-  return { col, y: this._getColGroupY(col, colSpan) };
-};
-
-MasonryMode.prototype._manageStamp = function(stamp) {
-  let stampSize = getSize(stamp);
-  let offset = this.isotope._getElementOffset(stamp);
-  let isOriginLeft = this.isotope._getOption('originLeft');
-  let firstX = isOriginLeft ? offset.left : offset.right;
-  let lastX = firstX + stampSize.outerWidth;
-  let firstCol = Math.floor(firstX / this.columnWidth);
-  firstCol = Math.max(0, firstCol);
-  let lastCol = Math.floor(lastX / this.columnWidth);
-  if (!(lastX % this.columnWidth)) lastCol -= 1;
-  lastCol = Math.min(this.cols - 1, lastCol);
-  let isOriginTop = this.isotope._getOption('originTop');
-  let stampMaxY = (isOriginTop ? offset.top : offset.bottom) + stampSize.outerHeight;
-  for (let i = firstCol; i <= lastCol; i++) {
-    this.colYs[i] = Math.max(stampMaxY, this.colYs[i]);
-  }
-};
-
-MasonryMode.prototype._getContainerSize = function() {
-  this.maxY = Math.max(...this.colYs);
-  let size = { height: this.maxY };
-  if (this.isotope._getOption('fitWidth')) {
-    size.width = this._getContainerFitWidth();
-  }
-  return size;
-};
-
-MasonryMode.prototype._getContainerFitWidth = function() {
-  let unusedCols = 0;
-  for (let i = this.cols - 1; i >= 0; i--) {
-    if (this.colYs[i] !== 0) break;
-    unusedCols++;
-  }
-  return (this.cols - unusedCols) * this.columnWidth - this.gutter;
-};
-
-MasonryMode.prototype.needsResizeLayout = function() {
-  let previousWidth = this.containerWidth;
-  this.getContainerWidth();
-  return previousWidth !== this.containerWidth;
-};
-
-MasonryMode.prototype._getOption = function(option) {
-  return option === 'fitWidth'
-    ? this.options.isFitWidth !== undefined
-      ? this.options.isFitWidth
-      : this.options.fitWidth
-    : this.isotope._getOption(option);
-};
+  return MasonryMode;
+  
 //// fim parte 8
 // -------------------------- FitRows -------------------------- //
 /**
