@@ -397,10 +397,40 @@ LayoutMode.create = function( namespace, options ) {
 LayoutMode.prototype.getSize = function() {
   this.size = getSize(this.element);
 };
-// -------------------------- Masonry Mode -------------------------- //
-/**
- * Modo de layout Masonry
+
+
+/*!
+ * Masonry layout mode
+ * sub-classes Masonry
+ * https://masonry.desandro.com
  */
+
+( function( window, factory ) {
+  // universal module definition
+  /* jshint strict: false */ /*globals define, module, require */
+  if ( typeof define == 'function' && define.amd ) {
+    // AMD
+    define( 'isotope-layout/js/layout-modes/masonry',[
+        '../layout-mode',
+        'masonry-layout/masonry'
+      ],
+      factory );
+  } else if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory(
+      require('../layout-mode'),
+      require('masonry-layout')
+    );
+  } else {
+    // browser global
+    factory(
+      window.Isotope.LayoutMode,
+      window.Masonry
+    );
+  }
+
+}( window, function factory( LayoutMode, Masonry ) {
+'use strict';
 
 // -------------------------- masonryDefinition -------------------------- //
 
@@ -443,40 +473,79 @@ LayoutMode.prototype.getSize = function() {
   };
 
   return MasonryMode;
+
+}));
   
 //// fim parte 8
 // -------------------------- FitRows -------------------------- //
 /**
- * Modo de layout FitRows
+ * fitRows layout mode
  */
-let FitRows = LayoutMode.create( 'fitRows' );
-console.log('FitRows definido:', !!FitRows, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-FitRows.prototype._resetLayout = function() {
+( function( window, factory ) {
+  // universal module definition
+  /* jshint strict: false */ /*globals define, module, require */
+  if ( typeof define == 'function' && define.amd ) {
+    // AMD
+    define( 'isotope-layout/js/layout-modes/fit-rows',[
+        '../layout-mode'
+      ],
+      factory );
+  } else if ( typeof exports == 'object' ) {
+    // CommonJS
+    module.exports = factory(
+      require('../layout-mode')
+    );
+  } else {
+    // browser global
+    factory(
+      window.Isotope.LayoutMode
+    );
+  }
+
+}( window, function factory( LayoutMode ) {
+'use strict';
+
+var FitRows = LayoutMode.create('fitRows');
+
+var proto = FitRows.prototype;
+
+proto._resetLayout = function() {
   this.x = 0;
   this.y = 0;
   this.maxY = 0;
-  this._getMeasurement('gutter', 'outerWidth');
+  this._getMeasurement( 'gutter', 'outerWidth' );
 };
 
-FitRows.prototype._getItemLayoutPosition = function(item) {
+proto._getItemLayoutPosition = function( item ) {
   item.getSize();
-  let itemWidth = item.size.outerWidth + this.gutter;
-  let containerWidth = this.isotope.size.innerWidth + this.gutter;
-  if (this.x !== 0 && itemWidth + this.x > containerWidth) {
+
+  var itemWidth = item.size.outerWidth + this.gutter;
+  // if this element cannot fit in the current row
+  var containerWidth = this.isotope.size.innerWidth + this.gutter;
+  if ( this.x !== 0 && itemWidth + this.x > containerWidth ) {
     this.x = 0;
     this.y = this.maxY;
   }
-  let position = { x: this.x, y: this.y };
-  this.maxY = Math.max(this.maxY, this.y + item.size.outerHeight);
+
+  var position = {
+    x: this.x,
+    y: this.y
+  };
+
+  this.maxY = Math.max( this.maxY, this.y + item.size.outerHeight );
   this.x += itemWidth;
+
   return position;
 };
 
-FitRows.prototype._getContainerSize = function() {
+proto._getContainerSize = function() {
   return { height: this.maxY };
 };
 
+return FitRows;
+
+}));
 
 // fim parte 9
   // -------------------------- Isotope Item -------------------------- //
