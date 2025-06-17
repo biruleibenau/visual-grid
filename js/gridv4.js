@@ -564,12 +564,6 @@ fitRowsProto._getContainerSize = function() {
 };
 
 
-// Registro manual dos modos no Isotope
-Isotope.prototype._modes = Isotope.prototype._modes || {};
-Isotope.prototype._modes['masonry'] = MasonryMode;
-Isotope.prototype._modes['fitRows'] = FitRows;
-console.log('Modos registrados:', Object.keys(Isotope.prototype._modes));
-
 // fim parte 9
   // -------------------------- Isotope Item -------------------------- //
   /**
@@ -1009,6 +1003,13 @@ proto._getFilterTest = function( filter ) {
       return item.element;
     } );
   };
+  
+  
+// Registro manual dos modos no Isotope
+Isotope.prototype._modes = Isotope.prototype._modes || {};
+Isotope.prototype._modes['masonry'] = MasonryMode;
+Isotope.prototype._modes['fitRows'] = FitRows;
+console.log('Modos registrados:', Object.keys(Isotope.prototype._modes));
 
   return Isotope;
 });
