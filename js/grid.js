@@ -402,7 +402,9 @@ LayoutMode.create = function( namespace, options ) {
 /**
  * Modo de layout Masonry
  */
-let masonryProto = MasonryMode.prototype;
+ 
+ const MasonryMode = LayoutMode.create('masonry');
+ let masonryProto = MasonryMode.prototype;
 
 masonryProto._resetLayout = function() {
   this.getSize();
@@ -1005,4 +1007,3 @@ proto._getFilterTest = function( filter ) {
   return Isotope;
 }));
 console.log('grid.js carregado completamente');
-
