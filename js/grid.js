@@ -400,10 +400,9 @@ Outlayer.defaults = {
 /**
  * Modo de layout Masonry
  */
-let MasonryMode = LayoutMode.create('masonry');
-console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
+let masonryProto = MasonryMode.prototype;
 
-MasonryMode.prototype._resetLayout = function () {
+masonryProto._resetLayout = function() {
   this.getSize();
   this._getMeasurement('columnWidth', 'outerWidth');
   this._getMeasurement('gutter', 'outerWidth');
@@ -413,116 +412,101 @@ MasonryMode.prototype._resetLayout = function () {
   this.horizontalColIndex = 0;
 };
 
-MasonryMode.prototype.measureColumns = function () {
+masonryProto.measureColumns = function() {
   this.getContainerWidth();
   if (!this.columnWidth) {
-    const firstItemElem = this.isotope.items[0]?.element;
-    this.columnWidth = firstItemElem ? getSize(firstItemElem).outerWidth : this.containerWidth;
+    let firstItem = this.isotope.items[0];
+    let firstItemElem = firstItem && firstItem.element;
+    this.columnWidth = (firstItemElem && getSize(firstItemElem).outerWidth) || this.containerWidth;
   }
   this.columnWidth += this.gutter;
-
-  const containerWidth = this.containerWidth + this.gutter;
-  const remainder = containerWidth % this.columnWidth;
-  const method = remainder && remainder < 1 ? 'round' : 'floor';
-
-  this.cols = Math.max(Math[method](containerWidth / this.columnWidth), 1);
+  let containerWidth = this.containerWidth + this.gutter;
+  let cols = containerWidth / this.columnWidth;
+  let excess = this.columnWidth - (containerWidth % this.columnWidth);
+  let mathMethod = excess && excess < 1 ? 'round' : 'floor';
+  cols = Math[mathMethod](cols);
+  this.cols = Math.max(cols, 1);
 };
 
-MasonryMode.prototype.getContainerWidth = function () {
-  const isFitWidth = this.isotope._getOption('fitWidth');
-  const container = isFitWidth ? this.element.parentNode : this.element;
-  const size = getSize(container);
-  this.containerWidth = size?.innerWidth || container.offsetWidth;
+masonryProto.getContainerWidth = function() {
+  let isFitWidth = this.isotope._getOption('fitWidth');
+  let container = isFitWidth ? this.element.parentNode : this.element;
+  let size = getSize(container);
+  this.containerWidth = size && size.innerWidth;
 };
 
-MasonryMode.prototype._getItemLayoutPosition = function (item) {
+masonryProto._getItemLayoutPosition = function(item) {
   item.getSize();
-  const remainder = item.size.outerWidth % this.columnWidth;
-  const colSpan = Math.min(
-    Math[(remainder && remainder < 1) ? 'round' : 'ceil'](item.size.outerWidth / this.columnWidth),
-    this.cols
-  );
-
-  const colPosition = this[this.options.horizontalOrder ? '_getHorizontalColPosition' : '_getTopColPosition'](colSpan, item);
-  const position = {
-    x: this.columnWidth * colPosition.col,
-    y: colPosition.y
-  };
-
-  const endCol = colPosition.col + colSpan;
-  for (let i = colPosition.col; i < endCol; i++) {
-    this.colYs[i] = position.y + item.size.outerHeight;
+  let remainder = item.size.outerWidth % this.columnWidth;
+  let mathMethod = remainder && remainder < 1 ? 'round' : 'ceil';
+  let colSpan = Math[mathMethod](item.size.outerWidth / this.columnWidth);
+  colSpan = Math.min(colSpan, this.cols);
+  let colPosMethod = this.options.horizontalOrder ? '_getHorizontalColPosition' : '_getTopColPosition';
+  let colPosition = this[colPosMethod](colSpan, item);
+  let position = { x: this.columnWidth * colPosition.col, y: colPosition.y };
+  let setHeight = colPosition.y + item.size.outerHeight;
+  for (let i = colPosition.col; i < colPosition.col + colSpan; i++) {
+    this.colYs[i] = setHeight;
   }
-
   return position;
 };
 
-MasonryMode.prototype._getTopColPosition = function (colSpan) {
-  const colGroup = this._getTopColGroup(colSpan);
-  const minY = Math.min(...colGroup);
-  return {
-    col: colGroup.indexOf(minY),
-    y: minY
-  };
+masonryProto._getTopColPosition = function(colSpan) {
+  let colGroup = this._getTopColGroup(colSpan);
+  let minY = Math.min(...colGroup);
+  return { col: colGroup.indexOf(minY), y: minY };
 };
 
-MasonryMode.prototype._getTopColGroup = function (colSpan) {
+masonryProto._getTopColGroup = function(colSpan) {
   if (colSpan < 2) return this.colYs;
-  const groupCount = this.cols + 1 - colSpan;
-  return Array.from({ length: groupCount }, (_, i) => this._getColGroupY(i, colSpan));
+  let colGroup = [];
+  for (let i = 0; i <= this.cols - colSpan; i++) {
+    colGroup[i] = this._getColGroupY(i, colSpan);
+  }
+  return colGroup;
 };
 
-MasonryMode.prototype._getColGroupY = function (col, colSpan) {
-  return colSpan < 2
-    ? this.colYs[col]
-    : Math.max(...this.colYs.slice(col, col + colSpan));
+masonryProto._getColGroupY = function(col, colSpan) {
+  return colSpan < 2 ? this.colYs[col] : Math.max(...this.colYs.slice(col, col + colSpan));
 };
 
-MasonryMode.prototype._getHorizontalColPosition = function (colSpan, item) {
+masonryProto._getHorizontalColPosition = function(colSpan, item) {
   let col = this.horizontalColIndex % this.cols;
   if (colSpan > 1 && col + colSpan > this.cols) col = 0;
-
   if (item.size.outerWidth && item.size.outerHeight) {
     this.horizontalColIndex = col + colSpan;
   }
-
-  return {
-    col,
-    y: this._getColGroupY(col, colSpan)
-  };
+  return { col, y: this._getColGroupY(col, colSpan) };
 };
 
-MasonryMode.prototype._manageStamp = function (stamp) {
-  const stampSize = getSize(stamp);
-  const offset = this.isotope._getElementOffset(stamp);
-  const isOriginLeft = this.isotope._getOption('originLeft');
-
-  const firstX = isOriginLeft ? offset.left : offset.right;
-  const lastX = firstX + stampSize.outerWidth;
-
+masonryProto._manageStamp = function(stamp) {
+  let stampSize = getSize(stamp);
+  let offset = this.isotope._getElementOffset(stamp);
+  let isOriginLeft = this.isotope._getOption('originLeft');
+  let firstX = isOriginLeft ? offset.left : offset.right;
+  let lastX = firstX + stampSize.outerWidth;
   let firstCol = Math.floor(firstX / this.columnWidth);
   firstCol = Math.max(0, firstCol);
-
   let lastCol = Math.floor(lastX / this.columnWidth);
   if (!(lastX % this.columnWidth)) lastCol -= 1;
   lastCol = Math.min(this.cols - 1, lastCol);
-
-  const stampMaxY = (this.isotope._getOption('originTop') ? offset.top : offset.bottom) + stampSize.outerHeight;
+  let isOriginTop = this.isotope._getOption('originTop');
+  let stampMaxY = (isOriginTop ? offset.top : offset.bottom) + stampSize.outerHeight;
   for (let i = firstCol; i <= lastCol; i++) {
-    this.colYs[i] = Math.max(this.colYs[i], stampMaxY);
+    this.colYs[i] = Math.max(stampMaxY, this.colYs[i]);
   }
 };
 
-MasonryMode.prototype._getContainerSize = function () {
+masonryProto._getContainerSize = function() {
   this.maxY = Math.max(...this.colYs);
-  const size = { height: this.maxY };
+  let size = { height: this.maxY };
   if (this.isotope._getOption('fitWidth')) {
     size.width = this._getContainerFitWidth();
   }
   return size;
 };
 
-MasonryMode.prototype._getContainerFitWidth = function () {
+masonryProto._getContainerFitWidth = function() {
   let unusedCols = 0;
   for (let i = this.cols - 1; i >= 0; i--) {
     if (this.colYs[i] !== 0) break;
@@ -531,15 +515,17 @@ MasonryMode.prototype._getContainerFitWidth = function () {
   return (this.cols - unusedCols) * this.columnWidth - this.gutter;
 };
 
-MasonryMode.prototype.needsResizeLayout = function () {
-  const previousWidth = this.containerWidth;
+masonryProto.needsResizeLayout = function() {
+  let previousWidth = this.containerWidth;
   this.getContainerWidth();
   return previousWidth !== this.containerWidth;
 };
 
-MasonryMode.prototype._getOption = function (option) {
+masonryProto._getOption = function(option) {
   return option === 'fitWidth'
-    ? (this.options.isFitWidth ?? this.options.fitWidth)
+    ? this.options.isFitWidth !== undefined
+      ? this.options.isFitWidth
+      : this.options.fitWidth
     : this.isotope._getOption(option);
 };
 //// fim parte 8
@@ -547,41 +533,33 @@ MasonryMode.prototype._getOption = function (option) {
 /**
  * Modo de layout FitRows
  */
-let FitRows = LayoutMode.create('fitRows');
-console.log('FitRows definido:', !!FitRows, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
+let fitRowsProto = FitRows.prototype;
 
-let proto = FitRows.prototype;
-
-proto._resetLayout = function () {
+fitRowsProto._resetLayout = function() {
   this.x = 0;
   this.y = 0;
   this.maxY = 0;
   this._getMeasurement('gutter', 'outerWidth');
 };
 
-proto._getItemLayoutPosition = function (item) {
+fitRowsProto._getItemLayoutPosition = function(item) {
   item.getSize();
-  const itemWidth = item.size.outerWidth + this.gutter;
-
-  // Usa a largura real do container, com fallback para offsetWidth
-  const containerWidth = this.isotope.size?.innerWidth || this.element.offsetWidth;
-
-  if (this.x !== 0 && (itemWidth + this.x > containerWidth)) {
+  let itemWidth = item.size.outerWidth + this.gutter;
+  let containerWidth = this.isotope.size.innerWidth + this.gutter;
+  if (this.x !== 0 && itemWidth + this.x > containerWidth) {
     this.x = 0;
     this.y = this.maxY;
   }
-
-  const position = { x: this.x, y: this.y };
-
+  let position = { x: this.x, y: this.y };
   this.maxY = Math.max(this.maxY, this.y + item.size.outerHeight);
   this.x += itemWidth;
-
   return position;
 };
 
-proto._getContainerSize = function () {
+fitRowsProto._getContainerSize = function() {
   return { height: this.maxY };
 };
+
 // fim parte 9
   // -------------------------- Isotope Item -------------------------- //
   /**
