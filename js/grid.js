@@ -907,13 +907,15 @@ proto._getFilterTest = function( filter ) {
   }
 
  proto._mode = function() {
+  // Garantir que this.modes exista antes de usar
+  if (!this.modes) {
+    console.warn('this.modes não está definido ainda. Inicializando como objeto vazio.');
+    this.modes = {};
+  }
+
   let layoutMode = this.options.layoutMode;
- console.log(
-  'Acessando modo:',
-  layoutMode,
-  'Modos disponíveis:',
-  this.modes ? Object.keys(this.modes) : '(modes indefinido)'
-);
+  console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
+
   let mode = this.modes[ layoutMode ];
   if ( !mode ) {
     console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
@@ -923,9 +925,11 @@ proto._getFilterTest = function( filter ) {
       throw new Error( 'No layout mode: ' + layoutMode );
     }
   }
-    mode.options = this.options[ layoutMode ] || {};
-    return mode;
+
+  mode.options = this.options[ layoutMode ] || {};
+  return mode;
 };
+
 
   proto._resetLayout = function() {
     Outlayer.prototype._resetLayout.call( this );
