@@ -537,6 +537,7 @@ masonryProto._getOption = function(option) {
 /**
  * Modo de layout FitRows
  */
+const MasonryMode = LayoutMode.create('fitRows');
 let fitRowsProto = FitRows.prototype;
 
 fitRowsProto._resetLayout = function() {
