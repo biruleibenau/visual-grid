@@ -33,6 +33,7 @@
 })(window, function factory() {
   'use strict';
 
+
   // -------------------------- Utils -------------------------- //
   /**
    * Funções utilitárias (fizzy-ui-utils)
@@ -1010,5 +1011,5 @@ proto._getFilterTest = function( filter ) {
   };
 
   return Isotope;
-}));
+});
 console.log('grid.js carregado completamente');
