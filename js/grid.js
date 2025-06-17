@@ -643,13 +643,13 @@ proto._getContainerSize = function() {
   console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
   for ( let name in LayoutMode.modes ) {
     console.log('Registrando modo:', name);
-    try {
-      this._initLayoutMode( name );
-    } catch (error) {
-      console.error('Erro ao inicializar modo:', name, error);
-    }
+    this._initLayoutMode( name );
   }
   console.log('Modos registrados:', Object.keys(this.modes));
+  if (!this.modes.masonry) {
+    console.error('Modo masonry não registrado! Tentando corrigir...');
+    this._initLayoutMode('masonry');
+  }
   console.log('Finalizando _create');
 };
   
@@ -760,12 +760,15 @@ proto._filter = function( items ) {
   let hiddenMatched = [];
   let visibleUnmatched = [];
   let test = this._getFilterTest( filter );
-  console.log('Filtrando com:', filter);
+  console.log('Filtrando com:', filter, 'Total de itens:', items.length);
   for ( let i = 0; i < items.length; i++ ) {
     let item = items[i];
-    if ( item.isIgnored ) continue;
+    if ( item.isIgnored ) {
+      console.log('Item ignorado:', item.element.className);
+      continue;
+    }
     let isMatched = test( item );
-    console.log('Item:', item.element.className, 'isMatched:', isMatched);
+    console.log('Item:', item.element.className, 'isMatched:', isMatched, 'isHidden:', item.isHidden);
     if ( isMatched ) matches.push( item );
     if ( isMatched && item.isHidden ) hiddenMatched.push( item );
     else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
@@ -788,11 +791,14 @@ proto._getFilterTest = function( filter ) {
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
     console.log('Usando jQuery para filtro');
     return function( item ) {
-      console.log('Testando item:', item.element.className);
-      let result = jQuery( item.element ).is( filter );
+      console.log('Testando item:', item.element.className, 'Seletor:', filter);
+      let $elem = jQuery( item.element );
+      let result = $elem.is( filter );
       console.log('jQuery.is(', filter, ') para', item.element.className, ':', result);
       let manualResult = item.element.classList.contains( filter.replace('.', '') );
       console.log('Manual check para', filter, 'em', item.element.className, ':', manualResult);
+      // Log adicional para classes do elemento
+      console.log('Classes do elemento:', item.element.className.split(' '));
       return result;
     };
   }
@@ -900,8 +906,9 @@ proto._getFilterTest = function( filter ) {
     };
   }
 
-  proto._mode = function() {
+ proto._mode = function() {
   let layoutMode = this.options.layoutMode;
+  console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
   let mode = this.modes[ layoutMode ];
   if ( !mode ) {
     console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
