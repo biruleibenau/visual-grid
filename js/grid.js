@@ -675,6 +675,7 @@ proto._getContainerSize = function() {
     console.error('Modo não encontrado:', name);
     return;
   }
+  console.log('Modo encontrado:', !!Mode, 'Namespace:', Mode.namespace);
   let initialOpts = this.options[ name ] || {};
   console.log('Opções iniciais para', name, ':', initialOpts);
   this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
@@ -772,7 +773,8 @@ proto._filter = function( items ) {
   console.log('Resultado do filtro:', {
     matches: matches.length,
     needReveal: hiddenMatched.length,
-    needHide: visibleUnmatched.length
+    needHide: visibleUnmatched.length,
+    matchedClasses: matches.map(item => item.element.className)
   });
   return {
     matches: matches,
@@ -786,9 +788,9 @@ proto._getFilterTest = function( filter ) {
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
     console.log('Usando jQuery para filtro');
     return function( item ) {
+      console.log('Testando item:', item.element.className);
       let result = jQuery( item.element ).is( filter );
       console.log('jQuery.is(', filter, ') para', item.element.className, ':', result);
-      // Teste manual
       let manualResult = item.element.classList.contains( filter.replace('.', '') );
       console.log('Manual check para', filter, 'em', item.element.className, ':', manualResult);
       return result;
@@ -899,14 +901,19 @@ proto._getFilterTest = function( filter ) {
   }
 
   proto._mode = function() {
-    let layoutMode = this.options.layoutMode;
-    let mode = this.modes[ layoutMode ];
+  let layoutMode = this.options.layoutMode;
+  let mode = this.modes[ layoutMode ];
+  if ( !mode ) {
+    console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
+    this._initLayoutMode( layoutMode );
+    mode = this.modes[ layoutMode ];
     if ( !mode ) {
       throw new Error( 'No layout mode: ' + layoutMode );
     }
-    mode.options = this.options[ layoutMode ];
-    return mode;
-  };
+  }
+  mode.options = this.options[ layoutMode ];
+  return mode;
+};
 
   proto._resetLayout = function() {
     Outlayer.prototype._resetLayout.call( this );
