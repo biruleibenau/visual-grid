@@ -368,18 +368,19 @@ function LayoutMode( isotope ) {
   }
 }
 
-let proto = LayoutMode.prototype;
+let layoutModeProto = LayoutMode.prototype;
 
-proto._create = function() {};
-proto._resetLayout = function() {};
-proto._getItemLayoutPosition = function() {
+
+layoutModeProto._create = function() {};
+layoutModeProto._resetLayout = function() {};
+layoutModeProto._getItemLayoutPosition = function() {
   return { x: 0, y: 0 };
 };
-proto._manageStamp = function() {};
-proto._getContainerSize = function() {
+layoutModeProto._manageStamp = function() {};
+layoutModeProto._getContainerSize = function() {
   return {};
 };
-proto.needsResizeLayout = function() {
+layoutModeProto.needsResizeLayout = function() {
   return false;
 };
 
