@@ -20,20 +20,36 @@
     } else {
       console.log('Definindo Isotope para navegador');
       window.Isotope = factory();
-      if ( window.jQuery ) {
-        console.log('jQuery detectado, registrando plugin Isotope');
-        jQuery.fn.isotope = function( options, callback ) {
-          return this.each( function() {
-            var instance = new window.Isotope( this, options );
-            if ( typeof callback === 'function' ) {
-              instance.once( 'arrangeComplete', callback );
-            }
-          });
-        };
-        console.log('Plugin jQuery do Isotope registrado');
-      } else {
-        console.log('jQuery não detectado, pulando integração');
+     if ( window.jQuery ) {
+  console.log('jQuery detectado, registrando plugin Isotope');
+  jQuery.fn.isotope = function( options, callback ) {
+    return this.each( function() {
+      var $this = jQuery( this );
+      // Reutilizar instância existente, se disponível
+      var instance = $this.data( 'isotope' );
+      if ( !instance && typeof options === 'object' ) {
+        instance = new window.Isotope( this, options );
+        $this.data( 'isotope', instance );
+        console.log('Nova instância do Isotope criada para:', this);
+      } else if ( instance ) {
+        // Aplicar opções ou métodos
+        if ( typeof options === 'string' ) {
+          instance[ options ].apply( instance, Array.prototype.slice.call( arguments, 1 ) );
+        } else if ( typeof options === 'object' ) {
+          instance.option( options );
+          instance.arrange();
+        }
+        console.log('Instância existente do Isotope reutilizada para:', this);
       }
+      if ( typeof callback === 'function' ) {
+        instance.once( 'arrangeComplete', callback );
+      }
+    });
+  };
+  console.log('Plugin jQuery do Isotope registrado');
+} else {
+  console.log('jQuery não detectado, pulando integração');
+}
       console.log('Isotope atribuído a window.Isotope');
     }
   } catch ( error ) {
