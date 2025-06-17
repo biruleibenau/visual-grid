@@ -918,8 +918,8 @@ proto._getFilterTest = function( filter ) {
       throw new Error( 'No layout mode: ' + layoutMode );
     }
   }
-  mode.options = this.options[ layoutMode ];
-  return mode;
+    mode.options = this.options[ layoutMode ] || {};
+    return mode;
 };
 
   proto._resetLayout = function() {
