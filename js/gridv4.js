@@ -404,7 +404,7 @@ LayoutMode.prototype.getSize = function() {
 let MasonryMode = LayoutMode.create( 'masonry' );
 console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
-Proto._resetLayout = function() {
+MasonryMode.prototype._resetLayout = function() {
   this.getSize();
   this._getMeasurement('columnWidth', 'outerWidth');
   this._getMeasurement('gutter', 'outerWidth');
