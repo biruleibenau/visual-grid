@@ -401,6 +401,26 @@ LayoutMode.prototype.getSize = function() {
 /**
  * Modo de layout Masonry
  */
+ 
+ let LayoutMode = {
+  modes: {},
+
+  create: function(name) {
+    function Mode() {
+      Outlayer.apply(this, arguments); // herda o construtor
+    }
+
+    // Herda de Outlayer
+    Mode.prototype = Object.create(Outlayer.prototype);
+    Mode.prototype.constructor = Mode;
+
+    // Registra esse modo
+    LayoutMode.modes[name] = Mode;
+
+    return Mode;
+  }
+};
+
 let MasonryMode = LayoutMode.create( 'masonry' );
 console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
 
