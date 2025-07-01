@@ -409,26 +409,75 @@ LayoutMode.prototype.getSize = function() {
 /**
  * Modo de layout Masonry
  */
- 
- // Remover ou comentar esta parte
-/*
-let LayoutMode = {
-  modes: {},
-  create: function(name) {
-    function Mode() {
-      Outlayer.apply(this, arguments);
+ console.log('Iniciando gridv4.js');
+
+// Definir getSize (supondo que já está incluído)
+var getSize = (function() {
+  // ... código de get-size ...
+  console.log('GetSize definido:', !!getSize);
+  return getSize;
+})();
+
+// Definir utils (supondo que já está incluído)
+var utils = {
+  extend: function(a, b) {
+    for (var prop in b) {
+      a[prop] = b[prop];
     }
-    Mode.prototype = Object.create(Outlayer.prototype);
-    Mode.prototype.constructor = Mode;
-    LayoutMode.modes[name] = Mode;
-    return Mode;
+    return a;
   }
+  // ... outros métodos de utils ...
 };
-*/
+console.log('Utils definido:', !!utils);
 
-let MasonryMode = LayoutMode.create( 'masonry' );
+// Definir Outlayer
+function Outlayer(element, options) {
+  this.element = element;
+  this.options = utils.extend({}, this.constructor.defaults);
+  this.getSize();
+}
+Outlayer.prototype.getSize = function() {
+  this.size = getSize(this.element);
+};
+Outlayer.prototype._getMeasurement = function(measurement, size) {
+  var option = this.options[measurement];
+  var elem;
+  if (!option) {
+    this[measurement] = 0;
+  } else if (typeof option === 'string') {
+    elem = this.element.querySelector(option);
+  } else if (option instanceof HTMLElement) {
+    elem = option;
+  }
+  this[measurement] = elem ? getSize(elem)[size] : option;
+};
+console.log('Outlayer._getMeasurement definido:', !!Outlayer.prototype._getMeasurement);
+
+// Definir LayoutMode
+function LayoutMode(isotope) {
+  this.isotope = isotope;
+  if (isotope) {
+    this.options = utils.extend({}, this.constructor.options);
+    this.element = isotope.element;
+  }
+}
+LayoutMode.modes = {};
+LayoutMode.create = function(name) {
+  function Mode() {
+    Outlayer.apply(this, arguments);
+  }
+  Mode.prototype = Object.create(Outlayer.prototype);
+  Mode.prototype.constructor = Mode;
+  utils.extend(Mode.prototype, LayoutMode.prototype);
+  LayoutMode.modes[name] = Mode;
+  console.log('Criando modo:', name, 'Mode herda _getMeasurement:', !!Mode.prototype._getMeasurement);
+  return Mode;
+};
+// Criar MasonryMode
+let MasonryMode = LayoutMode.create('masonry');
 console.log('MasonryMode definido:', !!MasonryMode, 'LayoutMode.modes:', Object.keys(LayoutMode.modes));
-
+console.log('MasonryMode herda _getMeasurement:', !!MasonryMode.prototype._getMeasurement);
+  
 MasonryMode.prototype._resetLayout = function() {
   this.getSize();
   this._getMeasurement('columnWidth', 'outerWidth');
@@ -437,22 +486,24 @@ MasonryMode.prototype._resetLayout = function() {
   this.colYs = Array(this.cols).fill(0);
   this.maxY = 0;
   this.horizontalColIndex = 0;
-};
+  console.log('MasonryMode._resetLayout executado:', {
+    columnWidth: this.columnWidth,
+    gutter: this.gutter,
+    cols: this.cols
+  });
+  };
 
 MasonryMode.prototype.measureColumns = function() {
-  this.getContainerWidth();
+  this.getSize();
   if (!this.columnWidth) {
-    let firstItem = this.isotope.items[0];
-    let firstItemElem = firstItem && firstItem.element;
-    this.columnWidth = (firstItemElem && getSize(firstItemElem).outerWidth) || this.containerWidth;
+    this._getMeasurement('columnWidth', 'outerWidth');
   }
-  this.columnWidth += this.gutter;
-  let containerWidth = this.containerWidth + this.gutter;
-  let cols = containerWidth / this.columnWidth;
-  let excess = this.columnWidth - (containerWidth % this.columnWidth);
-  let mathMethod = excess && excess < 1 ? 'round' : 'floor';
-  cols = Math[mathMethod](cols);
-  this.cols = Math.max(cols, 1);
+  if (!this.gutter) {
+    this._getMeasurement('gutter', 'outerWidth');
+  }
+  var containerWidth = this.size.width + this.gutter;
+  this.cols = Math.floor((containerWidth + this.gutter) / (this.columnWidth + this.gutter)) || 1;
+  console.log('measureColumns:', { cols: this.cols, containerWidth: containerWidth });
 };
 
 MasonryMode.prototype.getContainerWidth = function() {
