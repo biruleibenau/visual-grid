@@ -1,13 +1,20 @@
+console.log('Iniciando gridv4.js');
 (function(window, factory) {
+  console.log('Dentro do IIFE');
   if (typeof define === 'function' && define.amd) {
+    console.log('Usando AMD');
     define(factory);
   } else if (typeof module === 'object' && module.exports) {
+    console.log('Usando CommonJS');
     module.exports = factory();
   } else {
+    console.log('Definindo window.Isotope');
     var Isotope = factory(); // <-- aqui sim, factory() retorna a classe final
     window.Isotope = Isotope;
+    console.log('window.Isotope definido:', !!window.Isotope);
 
     if (window.jQuery) {
+      console.log('Registrando plugin jQuery');
       jQuery.fn.isotope = function(options, callback) {
         return this.each(function() {
           var $this = jQuery(this);
