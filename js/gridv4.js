@@ -409,26 +409,7 @@ LayoutMode.prototype.getSize = function() {
 /**
  * Modo de layout Masonry
  */
- console.log('Iniciando gridv4.js');
-
-// Definir getSize (supondo que já está incluído)
-var getSize = (function() {
-  // ... código de get-size ...
-  console.log('GetSize definido:', !!getSize);
-  return getSize;
-})();
-
-// Definir utils (supondo que já está incluído)
-var utils = {
-  extend: function(a, b) {
-    for (var prop in b) {
-      a[prop] = b[prop];
-    }
-    return a;
-  }
-  // ... outros métodos de utils ...
-};
-console.log('Utils definido:', !!utils);
+ console.log('Iniciando layout mansonry');
 
 // Definir Outlayer
 function Outlayer(element, options) {
