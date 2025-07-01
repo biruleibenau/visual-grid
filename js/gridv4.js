@@ -32,6 +32,7 @@
   }
 })(window, function factory() {
   'use strict';
+  console.log('Executando factory');
 
 
   // -------------------------- Utils -------------------------- //
@@ -1031,7 +1032,7 @@ Isotope.prototype._modes = Isotope.prototype._modes || {};
 Isotope.prototype._modes['masonry'] = MasonryMode;
 Isotope.prototype._modes['fitRows'] = FitRows;
 console.log('Modos registrados:', Object.keys(Isotope.prototype._modes));
-
+  console.log('Retornando Isotope:', Isotope);
   return Isotope;
 });
 console.log('grid.js carregado completamente');
