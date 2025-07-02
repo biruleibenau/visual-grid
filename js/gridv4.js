@@ -427,29 +427,6 @@ LayoutMode.prototype.getSize = function() {
  */
  console.log('Iniciando layout mansonry');
 
-// Definir Outlayer
-function Outlayer(element, options) {
-  this.element = element;
-  this.options = utils.extend({}, this.constructor.defaults);
-  this.getSize();
-}
-Outlayer.prototype.getSize = function() {
-  this.size = getSize(this.element);
-};
-Outlayer.prototype._getMeasurement = function(measurement, size) {
-  var option = this.options[measurement];
-  var elem;
-  if (!option) {
-    this[measurement] = 0;
-  } else if (typeof option === 'string') {
-    elem = this.element.querySelector(option);
-  } else if (option instanceof HTMLElement) {
-    elem = option;
-  }
-  this[measurement] = elem ? getSize(elem)[size] : option;
-};
-console.log('Outlayer._getMeasurement definido:', !!Outlayer.prototype._getMeasurement);
-
 // Definir LayoutMode
 function LayoutMode(isotope) {
   this.isotope = isotope;
