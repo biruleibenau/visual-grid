@@ -804,24 +804,32 @@ Isotope.prototype.constructor = Isotope;
     });
   };
 
-proto._filter = function( items ) {
+proto._filter = function(items) {
+  if (!items || !Array.isArray(items)) {
+    console.error('Isotope: Items não definidos ou não são um array', items);
+    return { matches: [], needReveal: [], needHide: [] };
+  }
   let filter = this.options.filter || '*';
-  let matches = [];
+  let matches = this.filterItems(filter);
   let hiddenMatched = [];
   let visibleUnmatched = [];
-  let test = this._getFilterTest( filter );
+  let test = this._getFilterTest(filter);
   console.log('Filtrando com:', filter, 'Total de itens:', items.length);
-  for ( let i = 0; i < items.length; i++ ) {
+  for (let i = 0; i < items.length; i++) {
     let item = items[i];
-    if ( item.isIgnored ) {
+    if (!item || !item.element) {
+      console.warn('Item inválido no índice:', i);
+      continue;
+    }
+    if (item.isIgnored) {
       console.log('Item ignorado:', item.element.className);
       continue;
     }
-    let isMatched = test( item );
+    let isMatched = test(item);
     console.log('Item:', item.element.className, 'isMatched:', isMatched, 'isHidden:', item.isHidden);
-    if ( isMatched ) matches.push( item );
-    if ( isMatched && item.isHidden ) hiddenMatched.push( item );
-    else if ( !isMatched && !item.isHidden ) visibleUnmatched.push( item );
+    if (isMatched) matches.push(item);
+    if (isMatched && item.isHidden) hiddenMatched.push(item);
+    else if (!isMatched && !item.isHidden) visibleUnmatched.push(item);
   }
   console.log('Resultado do filtro:', {
     matches: matches.length,
@@ -835,7 +843,6 @@ proto._filter = function( items ) {
     needHide: visibleUnmatched
   };
 };
-
   Isotope.prototype.filterItems = function(filterValue) {
   var selector = filterValue === '*' ? '*' : filterValue;
   var items = selector === '*' ? this.items : this.items.filter(item => {
