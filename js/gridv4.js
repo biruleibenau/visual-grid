@@ -400,7 +400,9 @@ function LayoutMode(isotope) {
 LayoutMode.modes = {};
 let layoutModeProto = LayoutMode.prototype;
 layoutModeProto._create = function() {};
-layoutModeProto._resetLayout = function() {};
+layoutModeProto._resetLayout = function() {
+  this.getSize();
+};
 layoutModeProto._getItemLayoutPosition = function() {
   return { x: 0, y: 0 };
 };
@@ -413,13 +415,12 @@ layoutModeProto.needsResizeLayout = function() {
 };
 LayoutMode.create = function(name) {
   function Mode() {
-    Outlayer.apply(this, arguments);
+    LayoutMode.apply(this, arguments);
   }
-  Mode.prototype = Object.create(Outlayer.prototype);
+  Mode.prototype = Object.create(LayoutMode.prototype);
   Mode.prototype.constructor = Mode;
-  utils.extend(Mode.prototype, LayoutMode.prototype);
   LayoutMode.modes[name] = Mode;
-  console.log('Criando modo:', name, 'Mode herda _getMeasurement:', !!Mode.prototype._getMeasurement);
+  console.log('Criando modo:', name, 'Mode herda _resetLayout:', !!Mode.prototype._resetLayout);
   return Mode;
 };
 // Criar MasonryMode
