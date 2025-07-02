@@ -382,30 +382,6 @@ Outlayer.prototype._itemize = function(elems) {
 /**
  * Classe base para modos de layout
  */
-function LayoutMode( isotope ) {
-  // console.log('entrou aqui 5'); // Removido para produção
-  this.isotope = isotope;
-  if ( isotope ) {
-    this.options = utils.extend( {}, this.constructor.options );
-    this.element = isotope.element;
-  }
-}
-LayoutMode.modes = {};
-let layoutModeProto = LayoutMode.prototype;
-
-
-layoutModeProto._create = function() {};
-layoutModeProto._resetLayout = function() {};
-layoutModeProto._getItemLayoutPosition = function() {
-  return { x: 0, y: 0 };
-};
-layoutModeProto._manageStamp = function() {};
-layoutModeProto._getContainerSize = function() {
-  return {};
-};
-layoutModeProto.needsResizeLayout = function() {
-  return false;
-};
 
 //LayoutMode.modes = {};
 
