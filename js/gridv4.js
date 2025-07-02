@@ -144,16 +144,19 @@ console.log('MatchesSelector definido'); // parte 4 M
   /**
    * Classe base para layouts (Outlayer)
    */
-  function Outlayer( element, options ) {
-  this.element = typeof element === 'string' ? document.querySelector( element ) : element;
-  if ( !this.element || !( this.element instanceof HTMLElement ) ) {
-    console.error( 'Isotope: Elemento inválido fornecido:', element );
-    this.element = document.createElement( 'div' ); // Fallback
+  // ... início do IIFE, utils, getSize, matchesSelector ...
+
+// Primeira definição de Outlayer (mantenha esta)
+function Outlayer(element, options) {
+  this.element = typeof element === 'string' ? document.querySelector(element) : element;
+  if (!this.element || !(this.element instanceof HTMLElement)) {
+    console.error('Isotope: Elemento inválido fornecido:', element);
+    this.element = document.createElement('div');
   }
-  this.options = utils.extend( {}, this.constructor.defaults );
-  this.option( options );
+  this.options = utils.extend({}, this.constructor.defaults);
+  this.option(options);
   this.items = [];
-  // console.log('Outlayer instanciado');
+  this.itemGUID = 0;
 }
 
 Outlayer.defaults = {
@@ -387,7 +390,7 @@ function LayoutMode( isotope ) {
     this.element = isotope.element;
   }
 }
-
+LayoutMode.modes = {};
 let layoutModeProto = LayoutMode.prototype;
 
 
@@ -404,7 +407,7 @@ layoutModeProto.needsResizeLayout = function() {
   return false;
 };
 
-LayoutMode.modes = {};
+//LayoutMode.modes = {};
 
 LayoutMode.create = function(name) {
   function Mode() {
@@ -666,6 +669,9 @@ let Isotope = Outlayer.create('isotope', {
 }
 Isotope.prototype = Object.create(Outlayer.prototype);
 Isotope.prototype.constructor = Isotope;
+
+  let proto = Isotope.prototype
+  
   proto._create = function() {
   console.log('Iniciando _create');
   this._sorters = {};
