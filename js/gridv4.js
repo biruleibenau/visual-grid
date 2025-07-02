@@ -176,20 +176,25 @@ Outlayer.defaults = {
   };
 
   proto._getItems = function() {
-    let items = this._itemize( this.element.children );
-    this.items = items;
-  };
+  let items = this._itemize(this.element.querySelectorAll(this.options.itemSelector));
+  console.log('Itens encontrados em _getItems:', items.length, items.map(item => item.element.className));
+  this.items = items;
+};
 
-  proto._itemize = function( elems ) {
-    let itemElems = utils.makeArray( elems );
-    let items = [];
-    for ( let i = 0; i < itemElems.length; i++ ) {
-      let elem = itemElems[i];
-      let item = new this.constructor.Item( elem, this );
-      items.push( item );
-    }
-    return items;
-  };
+  proto._itemize = function(elems) {
+  let itemElems = utils.makeArray(elems);
+  let items = [];
+  for (let i = 0; i < itemElems.length; i++) {
+    let elem = itemElems[i];
+    if (!(elem instanceof HTMLElement)) continue;
+    let item = new this.constructor.Item(elem, this);
+    item.id = this.itemGUID++;
+    items.push(item);
+    console.log('Item criado:', item.element.className, 'ID:', item.id);
+  }
+  console.log('Itens inicializados:', items.length);
+  return items;
+};
 
   proto.layout = function() {
     this._resetLayout();
@@ -390,15 +395,15 @@ layoutModeProto.needsResizeLayout = function() {
 
 LayoutMode.modes = {};
 
-LayoutMode.create = function( namespace, options ) {
+LayoutMode.create = function(name) {
   function Mode() {
-    LayoutMode.apply( this, arguments );
+    Outlayer.apply(this, arguments);
   }
-  Mode.prototype = Object.create( LayoutMode.prototype );
+  Mode.prototype = Object.create(Outlayer.prototype);
   Mode.prototype.constructor = Mode;
-  Mode.options = options || {};
-  Mode.namespace = namespace;
-  LayoutMode.modes[ namespace ] = Mode;
+  utils.extend(Mode.prototype, LayoutMode.prototype);
+  LayoutMode.modes[name] = Mode;
+  console.log('Criando modo:', name, 'Mode herda _getMeasurement:', !!Mode.prototype._getMeasurement);
   return Mode;
 };
 
@@ -652,11 +657,13 @@ FitRows.prototype._getContainerSize = function() {
   /**
    * Classe principal do Isotope
    */
-  let Isotope = Outlayer.create( 'isotope', {
-    layoutMode: 'masonry',
-    sortAscending: true,
-    isJQueryFiltering: true
-  });
+  function Isotope(element, options) {
+  Outlayer.call(this, element, options);
+  this.modes = utils.extend({}, LayoutMode.modes);
+  console.log('Inicializando Isotope com modes:', Object.keys(this.modes));
+}
+Isotope.prototype = Object.create(Outlayer.prototype);
+Isotope.prototype.constructor = Isotope;
 
   Isotope.Item = Item;
   Isotope.LayoutMode = LayoutMode;
@@ -817,6 +824,16 @@ proto._filter = function( items ) {
     needReveal: hiddenMatched,
     needHide: visibleUnmatched
   };
+};
+
+  Isotope.prototype.filterItems = function(filterValue) {
+  var selector = filterValue === '*' ? '*' : filterValue;
+  var items = selector === '*' ? this.items : this.items.filter(item => {
+    console.log('Verificando item:', item.element.className, 'com filtro:', selector);
+    return item.element.matches(selector);
+  });
+  console.log('Filtrando com:', selector, 'Total de itens:', items.length);
+  return items;
 };
 
 proto._getFilterTest = function( filter ) {
