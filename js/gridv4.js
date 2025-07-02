@@ -398,6 +398,7 @@ function LayoutMode(isotope) {
   }
 }
 LayoutMode.modes = {};
+LayoutMode.options = {}; // Define opções padrão
 let layoutModeProto = LayoutMode.prototype;
 layoutModeProto._create = function() {};
 layoutModeProto._resetLayout = function() {
