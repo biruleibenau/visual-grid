@@ -677,7 +677,6 @@ Isotope.prototype.constructor = Isotope;
   console.log('Após getSorters');
   Outlayer.prototype._create.call( this );
   console.log('Após Outlayer._create');
-  this.modes = {};
   this.filteredItems = this.items;
   this.sortHistory = [ 'original-order' ];
   console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
