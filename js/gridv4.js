@@ -629,7 +629,7 @@ let Isotope = Outlayer.create('isotope', {
   /**
    * Classe principal do Isotope
    */
- function Isotope(element, options) {
+ /*function Isotope(element, options) {
   this.element = typeof element === 'string' ? document.querySelector(element) : element;
   if (!this.element || !(this.element instanceof HTMLElement)) {
     console.error('Isotope: Elemento inválido fornecido:', element);
@@ -644,7 +644,7 @@ let Isotope = Outlayer.create('isotope', {
   this.itemGUID = 0;
 }
 Isotope.prototype = Object.create(Outlayer.prototype);
-Isotope.prototype.constructor = Isotope;
+Isotope.prototype.constructor = Isotope;*/
 
   let proto = Isotope.prototype
   
