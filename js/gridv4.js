@@ -163,17 +163,17 @@ Outlayer.defaults = {
   transitionDuration: 0.4
 };
 
-  let proto = Outlayer.prototype;
+  let outlayerProto = Outlayer.prototype;
 
-  proto.option = function( opts ) {
+  outlayerProto.option = function( opts ) {
     utils.extend( this.options, opts );
   };
 
-  proto._getOption = function( option ) {
+  outlayerProto._getOption = function( option ) {
     return this.options[ option ];
   };
 
-  proto._create = function() {
+  outlayerProto._create = function() {
     this._getItems();
     this.layoutItems( this.items );
   };
@@ -210,21 +210,21 @@ Outlayer.prototype._itemize = function(elems) {
   console.log('Itens inicializados:', items.length);
   return items;
 };
-  proto.layout = function() {
+  outlayerProto.layout = function() {
     this._resetLayout();
     this._manageStamps();
     this.layoutItems( this.items );
   };
 
-  proto._resetLayout = function() {
+  outlayerProto._resetLayout = function() {
     this.getSize();
   };
 
-  proto.getSize = function() {
+  outlayerProto.getSize = function() {
     this.size = getSize( this.element );
   };
 
-  proto._manageStamps = function() {
+  outlayerProto._manageStamps = function() {
     let stampElems = this._getOption( 'stamp' );
     stampElems = stampElems ? utils.makeArray( stampElems ) : [];
     for ( let i = 0; i < stampElems.length; i++ ) {
@@ -232,7 +232,7 @@ Outlayer.prototype._itemize = function(elems) {
     }
   };
 
-  proto.layoutItems = function( items, isInstant ) {
+  outlayerProto.layoutItems = function( items, isInstant ) {
   for ( let i = 0; i < items.length; i++ ) {
     let item = items[i];
     if ( item.isIgnored ) continue;
@@ -241,7 +241,7 @@ Outlayer.prototype._itemize = function(elems) {
   }
 };
 
-  proto._getElementOffset = function( elem ) {
+  outlayerProto._getElementOffset = function( elem ) {
     let rect = elem.getBoundingClientRect();
     let containerRect = this.element.getBoundingClientRect();
     return {
@@ -250,7 +250,7 @@ Outlayer.prototype._itemize = function(elems) {
     };
   };
 
-  proto._getMeasurement = function( measure, styleProp ) {
+  outlayerProto._getMeasurement = function( measure, styleProp ) {
     let option = this._getOption( measure );
     if ( typeof option === 'number' ) {
       this[ measure ] = option;
@@ -260,13 +260,13 @@ Outlayer.prototype._itemize = function(elems) {
     this[ measure ] = elem ? parseFloat( getComputedStyle( elem )[ styleProp ] ) : 0;
   };
 
-  proto.addItems = function( elems ) {
+  outlayerProto.addItems = function( elems ) {
     let items = this._itemize( elems );
     this.items = this.items.concat( items );
     return items;
   };
 
-  proto.remove = function( elems ) {
+  outlayerProto.remove = function( elems ) {
     elems = utils.makeArray( elems );
     let removeItems = this.getItems( elems );
     for ( let i = 0; i < removeItems.length; i++ ) {
@@ -278,12 +278,12 @@ Outlayer.prototype._itemize = function(elems) {
     }
   };
 
-  proto.dispatchEvent = function( type, event, args ) {
+  outlayerProto.dispatchEvent = function( type, event, args ) {
     let evt = new CustomEvent( type, { detail: args } );
     this.element.dispatchEvent( evt );
   };
 
-  proto.once = function( type, listener ) {
+  outlayerProto.once = function( type, listener ) {
     let _this = this;
     function handler() {
       if ( _this.element && _this.element.removeEventListener ) {
@@ -299,7 +299,7 @@ Outlayer.prototype._itemize = function(elems) {
     }
   };
 
-  proto.reveal = function( items ) {
+  outlayerProto.reveal = function( items ) {
   if ( !items || !items.length ) return;
   for ( let i = 0; i < items.length; i++ ) {
     items[i].element.classList.remove('isotope-hidden');
@@ -310,7 +310,7 @@ Outlayer.prototype._itemize = function(elems) {
   this.dispatchEvent( 'revealComplete', null, [ items ] );
 };
 
-  proto.hide = function( items ) {
+  outlayerProto.hide = function( items ) {
   if ( !items || !items.length ) return;
   for ( let i = 0; i < items.length; i++ ) {
     items[i].element.classList.add('isotope-hidden');
@@ -612,9 +612,9 @@ let Isotope = Outlayer.create('isotope', {
   Item.prototype = Object.create( Outlayer.Item.prototype );
   Item.prototype.constructor = Item;
 
-  proto = Item.prototype;
+  let itemProto = Item.prototype;
 
-  proto.updateSortData = function() {
+  itemProto.updateSortData = function() {
     if ( this.isIgnored ) return;
     this.sortData.id = this.id;
     this.sortData[ 'original-order' ] = this.id;
@@ -646,9 +646,9 @@ let Isotope = Outlayer.create('isotope', {
 Isotope.prototype = Object.create(Outlayer.prototype);
 Isotope.prototype.constructor = Isotope;*/
 
-  let proto = Isotope.prototype
+  let isotopeProto = Isotope.prototype
   
-  proto._create = function() {
+  isotopeProto._create = function() {
   console.log('Iniciando _create');
   this._sorters = {};
   this._getSorters();
@@ -672,12 +672,12 @@ Isotope.prototype.constructor = Isotope;*/
   console.log('Finalizando _create');
 };
   
-  proto.reloadItems = function() {
+  isotopeProto.reloadItems = function() {
     this.itemGUID = 0;
     Outlayer.prototype.reloadItems.call( this );
   };
 
-  proto._itemize = function() {
+  isotopeProto._itemize = function() {
     let items = Outlayer.prototype._itemize.apply( this, arguments );
     for ( let i = 0; i < items.length; i++ ) {
       let item = items[i];
@@ -687,7 +687,7 @@ Isotope.prototype.constructor = Isotope;*/
     return items;
   };
 
-  proto._initLayoutMode = function( name ) {
+  isotopeProto._initLayoutMode = function( name ) {
   console.log('Inicializando modo:', name);
   let Mode = LayoutMode.modes[ name ];
   if (!Mode) {
@@ -706,7 +706,7 @@ Isotope.prototype.constructor = Isotope;*/
   }
 };
   
-  proto.layout = function() {
+  isotopeProto.layout = function() {
     if ( !this._isLayoutInited && this._getOption( 'initLayout' ) ) {
       this.arrange();
       return;
@@ -714,7 +714,7 @@ Isotope.prototype.constructor = Isotope;*/
     this._layout();
   };
 
-  proto._layout = function() {
+  isotopeProto._layout = function() {
     let isInstant = this._getIsInstant();
     this._resetLayout();
     this._manageStamps();
@@ -722,7 +722,7 @@ Isotope.prototype.constructor = Isotope;*/
     this._isLayoutInited = true;
   };
 
-  proto.arrange = function( opts ) {
+  isotopeProto.arrange = function( opts ) {
     this.option( opts );
     this._getIsInstant();
     let filtered = this._filter( this.items );
@@ -737,21 +737,21 @@ Isotope.prototype.constructor = Isotope;*/
     this._layout();
   };
 
-  proto._init = proto.arrange;
+  isotopeProto._init = proto.arrange;
 
-  proto._hideReveal = function( filtered ) {
+  isotopeProto._hideReveal = function( filtered ) {
     this.reveal( filtered.needReveal );
     this.hide( filtered.needHide );
   };
 
-  proto._getIsInstant = function() {
+  isotopeProto._getIsInstant = function() {
     let isLayoutInstant = this._getOption( 'layoutInstant' );
     let isInstant = isLayoutInstant !== undefined ? isLayoutInstant : !this._isLayoutInited;
     this._isInstant = isInstant;
     return isInstant;
   };
 
-  proto._bindArrangeComplete = function() {
+  isotopeProto._bindArrangeComplete = function() {
     let isLayoutComplete, isHideComplete, isRevealComplete;
     let _this = this;
     function arrangeParallelCallback() {
@@ -773,7 +773,7 @@ Isotope.prototype.constructor = Isotope;*/
     });
   };
 
-proto._filter = function(items) {
+isotopeProto._filter = function(items) {
   if (!items || !Array.isArray(items)) {
     console.error('Isotope: Items não definidos ou não são um array', items);
     return { matches: [], needReveal: [], needHide: [] };
@@ -812,7 +812,7 @@ proto._filter = function(items) {
     needHide: visibleUnmatched
   };
 };
- proto.filterItems = function(filterValue) {
+ isotopeProto.filterItems = function(filterValue) {
   var selector = filterValue === '*' ? '*' : filterValue;
   if (!this.items || !Array.isArray(this.items)) {
     console.error('Isotope: this.items não está definido ou não é um array', this.items);
@@ -830,7 +830,7 @@ proto._filter = function(items) {
   return items;
 };
 
-proto._getFilterTest = function( filter ) {
+isotopeProto._getFilterTest = function( filter ) {
   console.log('Criando teste de filtro para:', filter);
   if ( window.jQuery && this._getOption( 'isJQueryFiltering' ) ) {
     console.log('Usando jQuery para filtro');
@@ -860,20 +860,20 @@ proto._getFilterTest = function( filter ) {
   };
 };
 
-  proto.updateSortData = function( elems ) {
+  isotopeProto.updateSortData = function( elems ) {
     let items = elems ? this.getItems( utils.makeArray( elems ) ) : this.items;
     this._getSorters();
     this._updateItemsSortData( items );
   };
 
-  proto._getSorters = function() {
+  isotopeProto._getSorters = function() {
     let getSortData = this.options.getSortData;
     for ( let key in getSortData ) {
       this._sorters[ key ] = mungeSorter( getSortData[ key ] );
     }
   };
 
-  proto._updateItemsSortData = function( items ) {
+  isotopeProto._updateItemsSortData = function( items ) {
     for ( let i = 0; i < items.length; i++ ) {
       items[i].updateSortData();
     }
@@ -917,7 +917,7 @@ proto._getFilterTest = function( filter ) {
     }
   };
 
-  proto._sort = function() {
+  isotopeProto._sort = function() {
     if ( !this.options.sortBy ) return;
     let sortBys = utils.makeArray( this.options.sortBy );
     if ( !this._getIsSameSortBy( sortBys ) ) {
@@ -927,7 +927,7 @@ proto._getFilterTest = function( filter ) {
     this.filteredItems.sort( itemSorter );
   };
 
-  proto._getIsSameSortBy = function( sortBys ) {
+  isotopeProto._getIsSameSortBy = function( sortBys ) {
     for ( let i = 0; i < sortBys.length; i++ ) {
       if ( sortBys[i] !== this.sortHistory[i] ) return false;
     }
@@ -949,7 +949,7 @@ proto._getFilterTest = function( filter ) {
       return 0;
     };
   }
-proto._mode = function() {
+isotopeProto._mode = function() {
   if (!this.modes) {
     console.error('this.modes não inicializado. Inicializando com modos registrados.');
     this.modes = utils.extend({}, LayoutMode.modes);
@@ -969,35 +969,35 @@ proto._mode = function() {
   mode.options = this.options[layoutMode] || {};
   return mode;
 };
-  proto._resetLayout = function() {
+  isotopeProto._resetLayout = function() {
     Outlayer.prototype._resetLayout.call( this );
     this._mode()._resetLayout();
   };
 
-  proto._getItemLayoutPosition = function( item ) {
+  isotopeProto._getItemLayoutPosition = function( item ) {
     return this._mode()._getItemLayoutPosition( item );
   };
 
-  proto._manageStamp = function( stamp ) {
+  isotopeProto._manageStamp = function( stamp ) {
     this._mode()._manageStamp( stamp );
   };
 
-  proto._getContainerSize = function() {
+  isotopeProto._getContainerSize = function() {
     return this._mode()._getContainerSize();
   };
 
-  proto.needsResizeLayout = function() {
+  isotopeProto.needsResizeLayout = function() {
     return this._mode().needsResizeLayout();
   };
 
-  proto.appended = function( elems ) {
+  isotopeProto.appended = function( elems ) {
     let items = this.addItems( elems );
     if ( !items.length ) return;
     let filteredItems = this._filterRevealAdded( items );
     this.filteredItems = this.filteredItems.concat( filteredItems );
   };
 
-  proto.prepended = function( elems ) {
+  isotopeProto.prepended = function( elems ) {
     let items = this._itemize( elems );
     if ( !items.length ) return;
     this._resetLayout();
@@ -1008,7 +1008,7 @@ proto._mode = function() {
     this.items = items.concat( this.items );
   };
 
-  proto._filterRevealAdded = function( items ) {
+  isotopeProto._filterRevealAdded = function( items ) {
     let filtered = this._filter( items );
     this.hide( filtered.needHide );
     this.reveal( filtered.matches );
@@ -1016,7 +1016,7 @@ proto._mode = function() {
     return filtered.matches;
   };
 
-  proto.insert = function( elems ) {
+  isotopeProto.insert = function( elems ) {
     let items = this.addItems( elems );
     if ( !items.length ) return;
     for ( let i = 0; i < items.length; i++ ) {
@@ -1033,8 +1033,8 @@ proto._mode = function() {
     this.reveal( filteredInsertItems );
   };
 
-  let _remove = proto.remove;
-  proto.remove = function( elems ) {
+  let _remove = isotopeProto.remove;
+  isotopeProto.remove = function( elems ) {
     elems = utils.makeArray( elems );
     let removeItems = this.getItems( elems );
     _remove.call( this, elems );
@@ -1044,7 +1044,7 @@ proto._mode = function() {
     }
   };
 
-  proto.shuffle = function() {
+  isotopeProto.shuffle = function() {
     for ( let i = 0; i < this.items.length; i++ ) {
       this.items[i].sortData.random = Math.random();
     }
@@ -1053,7 +1053,7 @@ proto._mode = function() {
     this._layout();
   };
 
-  proto._noTransition = function( fn, args ) {
+  isotopeProto._noTransition = function( fn, args ) {
     let transitionDuration = this._getOption( 'transitionDuration' );
     this.options.transitionDuration = 0;
     let returnValue = fn.apply( this, args );
@@ -1061,7 +1061,7 @@ proto._mode = function() {
     return returnValue;
   };
 
-  proto.getFilteredItemElements = function() {
+  isotopeProto.getFilteredItemElements = function() {
     return this.filteredItems.map( function( item ) {
       return item.element;
     } );
