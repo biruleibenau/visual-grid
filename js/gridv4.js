@@ -343,14 +343,14 @@ Outlayer.prototype._itemize = function(elems) {
     this.outlayer = outlayer;
   };
 
-  let itemProto = Outlayer.Item.prototype;
+  let outlayerItemProto = Outlayer.Item.prototype;
 
 
-  itemProto.getSize = function() {
+  outlayerItemProto.getSize = function() {
     this.size = getSize( this.element );
   };
 
-  itemProto.applyPosition = function( position, isInstant ) {
+  outlayerItemProto.applyPosition = function( position, isInstant ) {
   let style = this.element.style;
   style.position = 'absolute';
   style.left = position.x + 'px';
@@ -362,13 +362,13 @@ Outlayer.prototype._itemize = function(elems) {
   }
 };
 
-  itemProto.reveal = function() {
+  outlayerItemProto.reveal = function() {
   this.element.style.display = '';
   this.element.style.opacity = '1';
   this.element.style.transform = 'none';
 };
 
-  itemProto.hide = function() {
+  outlayerItemProto.hide = function() {
     this.element.style.display = 'none';
   };
 
@@ -383,23 +383,6 @@ Outlayer.prototype._itemize = function(elems) {
  * Classe base para modos de layout
  */
 
-//LayoutMode.modes = {};
-
-LayoutMode.create = function(name) {
-  function Mode() {
-    Outlayer.apply(this, arguments);
-  }
-  Mode.prototype = Object.create(Outlayer.prototype);
-  Mode.prototype.constructor = Mode;
-  utils.extend(Mode.prototype, LayoutMode.prototype);
-  LayoutMode.modes[name] = Mode;
-  console.log('Criando modo:', name, 'Mode herda _getMeasurement:', !!Mode.prototype._getMeasurement);
-  return Mode;
-};
-
-LayoutMode.prototype.getSize = function() {
-  this.size = getSize(this.element);
-};
 // -------------------------- Masonry Mode -------------------------- //
 /**
  * Modo de layout Masonry
@@ -629,22 +612,23 @@ let Isotope = Outlayer.create('isotope', {
   /**
    * Classe principal do Isotope
    */
- /*function Isotope(element, options) {
+ function IsotopeTemp(element, options) {
   this.element = typeof element === 'string' ? document.querySelector(element) : element;
   if (!this.element || !(this.element instanceof HTMLElement)) {
     console.error('Isotope: Elemento inválido fornecido:', element);
     this.element = document.createElement('div');
   }
   this.options = utils.extend({}, this.constructor.defaults);
-  this.option(options); // Aplica as opções do usuário
+  this.option(options);
   this.modes = utils.extend({}, LayoutMode.modes);
   console.log('Inicializando Isotope com modes:', Object.keys(this.modes));
   console.log('Opções iniciais:', this.options);
-  this.items = []; // Inicializa this.items
+  this.items = [];
   this.itemGUID = 0;
 }
+Isotope = IsotopeTemp; // Redefinir Isotope para usar o construtor temporário
 Isotope.prototype = Object.create(Outlayer.prototype);
-Isotope.prototype.constructor = Isotope;*/
+Isotope.prototype.constructor = Isotope;
 
   let isotopeProto = Isotope.prototype
   
