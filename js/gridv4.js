@@ -696,7 +696,7 @@ Isotope.prototype.constructor = Isotope;
   console.log('Modo encontrado:', !!Mode, 'Namespace:', Mode.namespace);
   let initialOpts = this.options[ name ] || {};
   console.log('Opções iniciais para', name, ':', initialOpts);
-  this.options[ name ] = Mode.options ? utils.extend( Mode.options, initialOpts ) : initialOpts;
+  this.options[name] = utils.extend({}, Mode.options, initialOpts);
   try {
     this.modes[ name ] = new Mode( this );
     console.log('Modo registrado com sucesso:', name, !!this.modes[ name ]);
