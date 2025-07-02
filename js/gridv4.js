@@ -843,9 +843,17 @@ proto._filter = function(items) {
     needHide: visibleUnmatched
   };
 };
-  Isotope.prototype.filterItems = function(filterValue) {
+ proto.filterItems = function(filterValue) {
   var selector = filterValue === '*' ? '*' : filterValue;
+  if (!this.items || !Array.isArray(this.items)) {
+    console.error('Isotope: this.items não está definido ou não é um array', this.items);
+    return [];
+  }
   var items = selector === '*' ? this.items : this.items.filter(item => {
+    if (!item.element) {
+      console.warn('Item sem elemento:', item);
+      return false;
+    }
     console.log('Verificando item:', item.element.className, 'com filtro:', selector);
     return item.element.matches(selector);
   });
