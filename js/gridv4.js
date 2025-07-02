@@ -420,6 +420,7 @@ LayoutMode.create = function(name) {
   }
   Mode.prototype = Object.create(LayoutMode.prototype);
   Mode.prototype.constructor = Mode;
+  Mode.options = utils.extend({}, LayoutMode.options);
   LayoutMode.modes[name] = Mode;
   console.log('Criando modo:', name, 'Mode herda _resetLayout:', !!Mode.prototype._resetLayout);
   return Mode;
