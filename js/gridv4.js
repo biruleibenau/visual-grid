@@ -668,38 +668,43 @@ FitRows.prototype._getContainerSize = function() {
   /**
    * Classe principal do Isotope
    */
-  function Isotope(element, options) {
-  Outlayer.call(this, element, options);
+ function Isotope(element, options) {
+  this.element = typeof element === 'string' ? document.querySelector(element) : element;
+  if (!this.element || !(this.element instanceof HTMLElement)) {
+    console.error('Isotope: Elemento inválido fornecido:', element);
+    this.element = document.createElement('div');
+  }
+  this.options = utils.extend({}, this.constructor.defaults);
+  this.option(options); // Aplica as opções do usuário
   this.modes = utils.extend({}, LayoutMode.modes);
   console.log('Inicializando Isotope com modes:', Object.keys(this.modes));
+  console.log('Opções iniciais:', this.options);
+  this.items = []; // Inicializa this.items
+  this.itemGUID = 0;
 }
 Isotope.prototype = Object.create(Outlayer.prototype);
 Isotope.prototype.constructor = Isotope;
-
-  Isotope.Item = Item;
-  Isotope.LayoutMode = LayoutMode;
-
-  proto = Isotope.prototype;
   proto._create = function() {
   console.log('Iniciando _create');
-  this.itemGUID = 0;
   this._sorters = {};
   this._getSorters();
   console.log('Após getSorters');
-  Outlayer.prototype._create.call( this );
+  Outlayer.prototype._create.call(this);
   console.log('Após Outlayer._create');
+  this._getItems(); // Chama _getItems explicitamente
   this.filteredItems = this.items;
-  this.sortHistory = [ 'original-order' ];
+  this.sortHistory = ['original-order'];
   console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
-  for ( let name in LayoutMode.modes ) {
+  for (let name in LayoutMode.modes) {
     console.log('Registrando modo:', name);
-    this._initLayoutMode( name );
+    this._initLayoutMode(name);
   }
   console.log('Modos registrados:', Object.keys(this.modes));
   if (!this.modes.masonry) {
     console.error('Modo masonry não registrado! Tentando corrigir...');
     this._initLayoutMode('masonry');
   }
+  console.log('Itens inicializados:', this.items.length, this.items.map(item => item.element.className));
   console.log('Finalizando _create');
 };
   
