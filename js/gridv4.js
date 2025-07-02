@@ -637,7 +637,12 @@ FitRows.prototype._getContainerSize = function() {
   return { height: this.maxY };
 };
 
-
+let Isotope = Outlayer.create('isotope', {
+  itemSelector: '.grid-item',
+  layoutMode: 'masonry',
+  sortAscending: true,
+  isJQueryFiltering: true
+});
 // fim parte 9
   // -------------------------- Isotope Item -------------------------- //
   /**
@@ -985,32 +990,26 @@ proto._getFilterTest = function( filter ) {
       return 0;
     };
   }
-
- proto._mode = function() {
-  // Garantir que this.modes exista antes de usar
+proto._mode = function() {
   if (!this.modes) {
-    console.warn('this.modes não está definido ainda. Inicializando como objeto vazio.');
-    this.modes = {};
+    console.error('this.modes não inicializado. Inicializando com modos registrados.');
+    this.modes = utils.extend({}, LayoutMode.modes);
   }
-
-  let layoutMode = this.options.layoutMode;
+  let layoutMode = this.options.layoutMode || 'masonry'; // Usa 'masonry' como padrão
   console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
-
-  let mode = this.modes[ layoutMode ];
-  if ( !mode ) {
+  let mode = this.modes[layoutMode];
+  if (!mode) {
     console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
-    this._initLayoutMode( layoutMode );
-    mode = this.modes[ layoutMode ];
-    if ( !mode ) {
-      throw new Error( 'No layout mode: ' + layoutMode );
+    this._initLayoutMode(layoutMode);
+    mode = this.modes[layoutMode];
+    if (!mode) {
+      console.error('Modo não encontrado após tentativa de recriação:', layoutMode);
+      throw new Error('No layout mode: ' + layoutMode);
     }
   }
-
-  mode.options = this.options[ layoutMode ] || {};
+  mode.options = this.options[layoutMode] || {};
   return mode;
 };
-
-
   proto._resetLayout = function() {
     Outlayer.prototype._resetLayout.call( this );
     this._mode()._resetLayout();
