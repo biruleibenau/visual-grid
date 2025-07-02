@@ -721,7 +721,7 @@ Isotope.prototype.constructor = Isotope;
     this._layout();
   };
 
-  isotopeProto._init = proto.arrange;
+  isotopeProto._init = isotopeProto.arrange;
 
   isotopeProto._hideReveal = function( filtered ) {
     this.reveal( filtered.needReveal );
