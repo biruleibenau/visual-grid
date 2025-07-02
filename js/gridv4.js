@@ -398,6 +398,19 @@ function LayoutMode(isotope) {
   }
 }
 LayoutMode.modes = {};
+let layoutModeProto = LayoutMode.prototype;
+layoutModeProto._create = function() {};
+layoutModeProto._resetLayout = function() {};
+layoutModeProto._getItemLayoutPosition = function() {
+  return { x: 0, y: 0 };
+};
+layoutModeProto._manageStamp = function() {};
+layoutModeProto._getContainerSize = function() {
+  return {};
+};
+layoutModeProto.needsResizeLayout = function() {
+  return false;
+};
 LayoutMode.create = function(name) {
   function Mode() {
     Outlayer.apply(this, arguments);
