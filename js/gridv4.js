@@ -175,27 +175,38 @@ Outlayer.defaults = {
     this.layoutItems( this.items );
   };
 
-  proto._getItems = function() {
-  let items = this._itemize(this.element.querySelectorAll(this.options.itemSelector));
+  Outlayer.prototype._getItems = function() {
+  if (!this.element) {
+    console.error('Isotope: Elemento contêiner não definido');
+    this.items = [];
+    return this.items;
+  }
+  let selector = this.options.itemSelector || '.grid-item';
+  let itemElems = this.element.querySelectorAll(selector);
+  console.log('Buscando itens com seletor:', selector, 'Encontrados:', itemElems.length);
+  let items = this._itemize(itemElems);
   console.log('Itens encontrados em _getItems:', items.length, items.map(item => item.element.className));
   this.items = items;
+  return items;
 };
 
-  proto._itemize = function(elems) {
+Outlayer.prototype._itemize = function(elems) {
   let itemElems = utils.makeArray(elems);
   let items = [];
   for (let i = 0; i < itemElems.length; i++) {
     let elem = itemElems[i];
-    if (!(elem instanceof HTMLElement)) continue;
+    if (!(elem instanceof HTMLElement)) {
+      console.warn('Ignorando elemento não-HTMLElement:', elem);
+      continue;
+    }
     let item = new this.constructor.Item(elem, this);
-    item.id = this.itemGUID++;
+    item.id = this.itemGUID ? this.itemGUID++ : i;
     items.push(item);
     console.log('Item criado:', item.element.className, 'ID:', item.id);
   }
   console.log('Itens inicializados:', items.length);
   return items;
 };
-
   proto.layout = function() {
     this._resetLayout();
     this._manageStamps();
