@@ -699,10 +699,11 @@ Isotope.prototype.constructor = Isotope;
   console.log('Opções iniciais para', name, ':', initialOpts);
   this.options[name] = utils.extend({}, Mode.options, initialOpts);
   try {
-    this.modes[ name ] = new Mode( this );
-    console.log('Modo registrado com sucesso:', name, !!this.modes[ name ]);
+    let modeInstance = new Mode(this);
+    this.modes[name] = modeInstance;
+    console.log('Modo instanciado:', name, 'Tem _resetLayout:', !!modeInstance._resetLayout, 'Instanceof LayoutMode:', modeInstance instanceof LayoutMode);
   } catch (error) {
-    console.error('Erro ao criar instância do modo:', name, error);
+    console.error('Erro ao instanciar modo:', name, error);
   }
 };
   
