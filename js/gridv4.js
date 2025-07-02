@@ -1080,7 +1080,6 @@ proto._getFilterTest = function( filter ) {
   
   
 // Registro manual dos modos no Isotope
-console.log('Modos registrados:', Object.keys(Isotope.prototype._modes));
   console.log('Retornando Isotope:', Isotope);
   return Isotope;
 });
