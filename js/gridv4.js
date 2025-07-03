@@ -970,10 +970,23 @@ isotopeProto._mode = function() {
   mode.options = this.options[layoutMode] || {};
   return mode;
 };
-  isotopeProto._resetLayout = function() {
+  /*isotopeProto._resetLayout = function() {
     Outlayer.prototype._resetLayout.call( this );
     this._mode()._resetLayout();
-  };
+  };*/
+
+  isotopeProto._resetLayout = function() {
+  Outlayer.prototype._resetLayout.call(this);
+  // Teste: chamar _resetLayout diretamente de LayoutMode.prototype
+  let mode = this._mode();
+  console.log('Modo retornado:', mode, 'Instanceof LayoutMode:', mode instanceof LayoutMode, 'Tem _resetLayout:', !!mode._resetLayout);
+  if (mode._resetLayout) {
+    mode._resetLayout();
+  } else {
+    console.warn('Modo não tem _resetLayout, usando LayoutMode.prototype._resetLayout');
+    LayoutMode.prototype._resetLayout.call(mode);
+  }
+}; /// temporaria
 
   isotopeProto._getItemLayoutPosition = function( item ) {
     return this._mode()._getItemLayoutPosition( item );
