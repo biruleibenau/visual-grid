@@ -979,16 +979,15 @@ isotopeProto._mode = function() {
 
   isotopeProto._resetLayout = function() {
   Outlayer.prototype._resetLayout.call(this);
-  // Teste: chamar _resetLayout diretamente de LayoutMode.prototype
   let mode = this._mode();
-  console.log('Modo retornado:', mode, 'Instanceof LayoutMode:', mode instanceof LayoutMode, 'Tem _resetLayout:', !!mode._resetLayout);
-  if (mode._resetLayout) {
+  console.log('Modo retornado:', mode, 'Instanceof LayoutMode:', mode instanceof LayoutMode, 'Tem _resetLayout:', !!mode._resetLayout, 'Tem getSize:', !!mode.getSize);
+  if (mode._resetLayout && mode.getSize) {
     mode._resetLayout();
   } else {
-    console.warn('Modo não tem _resetLayout, usando LayoutMode.prototype._resetLayout');
-    LayoutMode.prototype._resetLayout.call(mode);
+    console.warn('Modo não tem _resetLayout ou getSize, usando LayoutMode.prototype._resetLayout com contexto Isotope');
+    LayoutMode.prototype._resetLayout.call(this); // Usa this (instância de Isotope)
   }
-}; /// temporaria
+};/// temporaria
 
   isotopeProto._getItemLayoutPosition = function( item ) {
     return this._mode()._getItemLayoutPosition( item );
