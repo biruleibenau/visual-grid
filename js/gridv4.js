@@ -186,7 +186,7 @@ Outlayer.defaults = {
   }
   let selector = this.options.itemSelector || '.grid-item';
   let itemElems = this.element.querySelectorAll(selector);
-  console.log('Buscando itens com seletor:', selector, 'Encontrados:', itemElems.length);
+  console.log('Buscando itens com seletor:', selector, 'Encontrados:', itemElems.length, 'Elemento:', this.element, 'Classes:', Array.from(itemElems).map(el => el.className));
   let items = this._itemize(itemElems);
   console.log('Itens encontrados em _getItems:', items.length, items.map(item => item.element.className));
   this.items = items;
@@ -196,6 +196,7 @@ Outlayer.defaults = {
 Outlayer.prototype._itemize = function(elems) {
   let itemElems = utils.makeArray(elems);
   let items = [];
+  let ItemClass = this.constructor.Item || Outlayer.Item; // Fallback para Outlayer.Item
   for (let i = 0; i < itemElems.length; i++) {
     let elem = itemElems[i];
     if (!(elem instanceof HTMLElement)) {
@@ -610,6 +611,7 @@ let Isotope = Outlayer.create('isotope', {
 
   Item.prototype = Object.create( Outlayer.Item.prototype );
   Item.prototype.constructor = Item;
+  IsotopeTemp.Item = Item;
 
   let itemProto = Item.prototype;
 
@@ -636,11 +638,13 @@ let Isotope = Outlayer.create('isotope', {
   }
   this.options = utils.extend({}, this.constructor.defaults);
   this.option(options);
-  this.modes = utils.extend({}, LayoutMode.modes);
+  this.modes = {}; // Inicializa this.modes como vazio
   console.log('Inicializando Isotope com modes:', Object.keys(this.modes));
   console.log('Opções iniciais:', this.options);
   this.items = [];
   this.itemGUID = 0;
+  this._getItems(); // Chama _getItems no construtor
+  console.log('Itens iniciais:', this.items.length, this.items.map(item => item.element.className));
 }
 Isotope = IsotopeTemp; // Redefinir Isotope para usar o construtor temporário
 Isotope.prototype = Object.create(Outlayer.prototype);
@@ -649,16 +653,15 @@ Isotope.prototype.constructor = Isotope;
   let isotopeProto = Isotope.prototype
   
   isotopeProto._create = function() {
-  console.log('Iniciando _create');
+  console.log('Iniciando _create', 'Elemento:', this.element, 'Opções:', this.options);
   this._sorters = {};
   this._getSorters();
-  console.log('Após getSorters');
   Outlayer.prototype._create.call(this);
-  console.log('Após Outlayer._create');
-  this._getItems(); // Chama _getItems explicitamente
+  this._getItems();
   this.filteredItems = this.items;
   this.sortHistory = ['original-order'];
   console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
+  this.modes = {}; // Reincializa this.modes
   for (let name in LayoutMode.modes) {
     console.log('Registrando modo:', name);
     this._initLayoutMode(name);
@@ -687,21 +690,23 @@ Isotope.prototype.constructor = Isotope;
     return items;
   };
 
-  isotopeProto._initLayoutMode = function( name ) {
+  isotopeProto._initLayoutMode = function(name) {
   console.log('Inicializando modo:', name);
-  let Mode = LayoutMode.modes[ name ];
+  let Mode = LayoutMode.modes[name];
   if (!Mode) {
     console.error('Modo não encontrado:', name);
     return;
   }
-  console.log('Modo encontrado:', !!Mode, 'Namespace:', Mode.namespace);
-  let initialOpts = this.options[ name ] || {};
-  console.log('Opções iniciais para', name, ':', initialOpts);
+  let initialOpts = this.options[name] || {};
   this.options[name] = utils.extend({}, Mode.options, initialOpts);
   try {
     let modeInstance = new Mode(this);
     this.modes[name] = modeInstance;
-    console.log('Modo instanciado:', name, 'Tem _resetLayout:', !!modeInstance._resetLayout, 'Instanceof LayoutMode:', modeInstance instanceof LayoutMode);
+    console.log('Modo instanciado:', name, 'Tem _resetLayout:', !!modeInstance._resetLayout, 'Instanceof LayoutMode:', modeInstance instanceof LayoutMode, 'Prototipo:', Object.getPrototypeOf(modeInstance));
+    if (!(modeInstance instanceof LayoutMode)) {
+      console.error('Instância de modo inválida:', name, modeInstance);
+      throw new Error('Instância de modo não é LayoutMode');
+    }
   } catch (error) {
     console.error('Erro ao instanciar modo:', name, error);
   }
@@ -951,23 +956,20 @@ isotopeProto._getFilterTest = function( filter ) {
     };
   }
 isotopeProto._mode = function() {
-  if (!this.modes) {
-    console.error('this.modes não inicializado. Inicializando com modos registrados.');
-    this.modes = utils.extend({}, LayoutMode.modes);
-  }
-  let layoutMode = this.options.layoutMode || 'masonry'; // Usa 'masonry' como padrão
+  let layoutMode = this.options.layoutMode || 'masonry';
   console.log('Acessando modo:', layoutMode, 'Modos disponíveis:', Object.keys(this.modes));
   let mode = this.modes[layoutMode];
-  if (!mode) {
-    console.warn('Modo não encontrado:', layoutMode, 'Tentando recriar...');
+  if (!mode || !(mode instanceof LayoutMode)) {
+    console.warn('Modo não encontrado ou não é instância de LayoutMode:', layoutMode, 'Tentando recriar...');
     this._initLayoutMode(layoutMode);
     mode = this.modes[layoutMode];
-    if (!mode) {
+    if (!mode || !(mode instanceof LayoutMode)) {
       console.error('Modo não encontrado após tentativa de recriação:', layoutMode);
       throw new Error('No layout mode: ' + layoutMode);
     }
   }
   mode.options = this.options[layoutMode] || {};
+  console.log('Retornando modo:', layoutMode, 'Instanceof LayoutMode:', mode instanceof LayoutMode, 'Tem _resetLayout:', !!mode._resetLayout, 'Tem getSize:', !!mode.getSize);
   return mode;
 };
   /*isotopeProto._resetLayout = function() {
@@ -977,14 +979,13 @@ isotopeProto._mode = function() {
 
   isotopeProto._resetLayout = function() {
   Outlayer.prototype._resetLayout.call(this);
-  // Teste: chamar _resetLayout diretamente de LayoutMode.prototype
   let mode = this._mode();
-  console.log('Modo retornado:', mode, 'Instanceof LayoutMode:', mode instanceof LayoutMode, 'Tem _resetLayout:', !!mode._resetLayout);
-  if (mode._resetLayout) {
+  console.log('Modo retornado:', mode, 'Instanceof LayoutMode:', mode instanceof LayoutMode, 'Tem _resetLayout:', !!mode._resetLayout, 'Tem getSize:', !!mode.getSize);
+  if (mode._resetLayout && mode.getSize) {
     mode._resetLayout();
   } else {
-    console.warn('Modo não tem _resetLayout, usando LayoutMode.prototype._resetLayout');
-    LayoutMode.prototype._resetLayout.call(mode);
+    console.warn('Modo não tem _resetLayout ou getSize, usando LayoutMode.prototype._resetLayout com contexto Isotope');
+    LayoutMode.prototype._resetLayout.call(this); // Usa this (instância de Isotope)
   }
 }; /// temporaria
 
