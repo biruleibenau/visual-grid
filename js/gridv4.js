@@ -636,7 +636,7 @@ let Isotope = Outlayer.create('isotope', {
   }
   this.options = utils.extend({}, this.constructor.defaults);
   this.option(options);
-  this.modes = utils.extend({}, LayoutMode.modes);
+  this.modes = {}; // Inicializa this.modes como vazio
   console.log('Inicializando Isotope com modes:', Object.keys(this.modes));
   console.log('Opções iniciais:', this.options);
   this.items = [];
@@ -658,6 +658,8 @@ Isotope.prototype.constructor = Isotope;
   this._getItems(); // Chama _getItems explicitamente
   this.filteredItems = this.items;
   this.sortHistory = ['original-order'];
+  console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
+  this.modes = {}; // Reincializa this.modes
   console.log('Modos disponíveis antes de registrar:', Object.keys(LayoutMode.modes));
   for (let name in LayoutMode.modes) {
     console.log('Registrando modo:', name);
