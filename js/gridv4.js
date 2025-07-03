@@ -186,7 +186,7 @@ Outlayer.defaults = {
   }
   let selector = this.options.itemSelector || '.grid-item';
   let itemElems = this.element.querySelectorAll(selector);
-  console.log('Buscando itens com seletor:', selector, 'Encontrados:', itemElems.length);
+  console.log('Buscando itens com seletor:', selector, 'Encontrados:', itemElems.length, 'Elemento:', this.element, 'Classes:', Array.from(itemElems).map(el => el.className));
   let items = this._itemize(itemElems);
   console.log('Itens encontrados em _getItems:', items.length, items.map(item => item.element.className));
   this.items = items;
@@ -636,11 +636,13 @@ let Isotope = Outlayer.create('isotope', {
   }
   this.options = utils.extend({}, this.constructor.defaults);
   this.option(options);
-  this.modes = {}; // Inicializa this.modes como vazio
+  this.modes = {};
   console.log('Inicializando Isotope com modes:', Object.keys(this.modes));
   console.log('Opções iniciais:', this.options);
   this.items = [];
   this.itemGUID = 0;
+  this._getItems(); // Chama _getItems no construtor
+  console.log('Itens iniciais:', this.items.length, this.items.map(item => item.element.className));
 }
 Isotope = IsotopeTemp; // Redefinir Isotope para usar o construtor temporário
 Isotope.prototype = Object.create(Outlayer.prototype);
